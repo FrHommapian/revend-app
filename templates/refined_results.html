@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refined Analysis Results - Revend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-size: 18px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .result-card {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: none;
+            overflow: hidden;
+        }
+        .detail-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 5px solid #28a745;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .detail-label {
+            font-weight: 700;
+            color: #495057;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .detail-value {
+            font-size: 20px;
+            color: #212529;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .price-section {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(220,53,69,0.3);
+        }
+        .price-main {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        .price-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .price-option {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .price-option-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .price-option-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .listing-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 3px solid #28a745;
+            font-size: 19px;
+            line-height: 1.8;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(40,167,69,0.2);
+        }
+        .copy-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 25px 50px;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+            transition: all 0.3s ease;
+        }
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40,167,69,0.4);
+        }
+        .section-header {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 30px 0 20px 0;
+            color: white;
+            text-align: center;
+        }
+        .badge-category {
+            font-size: 18px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .refined-badge {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        .corrections-summary {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            body { font-size: 20px; }
+            .detail-value { font-size: 22px; }
+            .listing-content { font-size: 20px; padding: 25px; }
+            .section-header { font-size: 30px; }
+            .price-main { font-size: 36px; }
+            .copy-btn { font-size: 22px; padding: 20px 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid px-3">
+        <div class="text-center mb-4">
+            <h1 class="section-header">🎯 Refined Analysis Complete!</h1>
+            <span class="badge bg-light text-dark badge-category">
+                {{ analysis_data.category_info.name }}
+                <span class="refined-badge">REFINED</span>
+            </span>
+            <div class="mt-3">
+                <a href="/" class="btn btn-outline-light btn-lg">← Analyze Another Item</a>
+            </div>
+        </div>
+        
+        <!-- USER CORRECTIONS SUMMARY -->
+        {% if analysis_data.user_corrections %}
+        <div class="corrections-summary">
+            <h4 style="margin-bottom: 15px;">📝 Your Corrections Applied:</h4>
+            <div class="row">
+                {% if analysis_data.user_corrections.brand %}
+                <div class="col-md-6">
+                    <strong>🏷️ Brand:</strong> {{ analysis_data.user_corrections.brand }}
+                </div>
+                {% endif %}
+                {% if analysis_data.user_corrections.model %}
+                <div class="col-md-6">
+                    <strong>📱 Model:</strong> {{ analysis_data.user_corrections.model }}
+                </div>
+                {% endif %}
+                {% if analysis_data.user_corrections.condition %}
+                <div class="col-md-6">
+                    <strong>✅ Condition:</strong> {{ analysis_data.user_corrections.condition|title }}
+                </div>
+                {% endif %}
+                {% if analysis_data.user_corrections.age_years %}
+                <div class="col-md-6">
+                    <strong>📅 Age:</strong> {{ analysis_data.user_corrections.age_years }} year(s) old
+                </div>
+                {% endif %}
+                {% if analysis_data.user_corrections.additional_details %}
+                <div class="col-12">
+                    <strong>📝 Additional Details:</strong> {{ analysis_data.user_corrections.additional_details }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- REFINED PRICING SECTION -->
+        <div class="price-section">
+            <div class="price-main">
+                💰 Refined Market Pricing
+            </div>
+            
+            {% if analysis_data.pricing_data and analysis_data.pricing_data.pricing_analysis %}
+                {% set pricing = analysis_data.pricing_data.pricing_analysis %}
+                
+                <div class="price-options">
+                    <div class="price-option">
+                        <div class="price-option-label">🚀 Quick Sale</div>
+                        <div class="price-option-value">${{ "%.0f"|format(pricing.quick_sale) }}</div>
+                    </div>
+                    <div class="price-option">
+                        <div class="price-option-label">🎯 Market Value</div>
+                        <div class="price-option-value">${{ "%.0f"|format(pricing.market_value) }}</div>
+                    </div>
+                    <div class="price-option">
+                        <div class="price-option-label">💎 Premium Price</div>
+                        <div class="price-option-value">${{ "%.0f"|format(pricing.premium_price) }}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 16px; opacity: 0.9;">
+                    Refined Confidence: {{ pricing.confidence|title }} | {{ pricing.data_points }} data points
+                </div>
+                
+                {% if analysis_data.brand_analysis %}
+                <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                    Brand Tier: {{ analysis_data.brand_analysis.tier.replace('_', ' ')|title }} | 
+                    Recognition: {{ 'Verified' if analysis_data.brand_analysis.recognized else 'Estimated' }}
+                </div>
+                {% endif %}
+                
+            {% endif %}
+        </div>
+        
+        <!-- REFINED ITEM ANALYSIS -->
+        <div class="card result-card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0" style="font-size: 24px;">🔍 Refined Item Analysis</h3>
+            </div>
+            <div class="card-body">
+                {% if analysis_data.analysis_json %}
+                    {% set item = analysis_data.analysis_json %}
+                    
+                    <!-- Item Type -->
+                    <div class="detail-item">
+                        <div class="detail-label">📦 Item Type</div>
+                        <div class="detail-value">{{ item.description|title }}</div>
+                    </div>
+                    
+                    <!-- Brand -->
+                    <div class="detail-item">
+                        <div class="detail-label">🏷️ Brand</div>
+                        <div class="detail-value">
+                            {{ item.brand }}
+                            <span class="refined-badge">CORRECTED</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Model -->
+                    {% if item.model and item.model != 'Unknown' %}
+                    <div class="detail-item">
+                        <div class="detail-label">📱 Model</div>
+                        <div class="detail-value">{{ item.model }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Condition -->
+                    <div class="detail-item">
+                        <div class="detail-label">✅ Condition</div>
+                        <div class="detail-value">
+                            {{ item.condition|title }}
+                            <span class="refined-badge">USER VERIFIED</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Age -->
+                    {% if item.age_years %}
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Age</div>
+                        <div class="detail-value">{{ item.age_years }} year(s) old</div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Additional Details -->
+                    {% if item.additional_details %}
+                    <div class="detail-item">
+                        <div class="detail-label">📝 Additional Details</div>
+                        <div class="detail-value">{{ item.additional_details }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Category -->
+                    <div class="detail-item">
+                        <div class="detail-label">📂 Category</div>
+                        <div class="detail-value">{{ analysis_data.category_info.name }}</div>
+                    </div>
+                    
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- REFINED LISTING -->
+        <div class="card result-card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0" style="font-size: 24px;">📋 Your Refined Marketplace Listing</h3>
+            </div>
+            <div class="card-body">
+                <div class="listing-content" id="listing-content">{{ listing }}</div>
+                
+                <button class="btn copy-btn" onclick="copyListing()">
+                    📋 Copy Refined Listing
+                </button>
+                
+                <div class="mt-4" style="text-align: center;">
+                    <p style="font-size: 16px; color: #6c757d; margin-bottom: 20px;">
+                        🎯 This refined analysis uses your corrections for maximum accuracy
+                    </p>
+                    <a href="/" class="btn btn-outline-primary btn-lg">Analyze Another Item</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyListing() {
+            const listingText = document.getElementById('listing-content').innerText;
+            
+            const pricingInfo = `
+            
+REFINED PRICING GUIDANCE:
+{% if analysis_data.pricing_data and analysis_data.pricing_data.pricing_analysis %}
+Quick Sale: ${{ "%.0f"|format(analysis_data.pricing_data.pricing_analysis.quick_sale) }}
+Market Value: ${{ "%.0f"|format(analysis_data.pricing_data.pricing_analysis.market_value) }}
+Premium Price: ${{ "%.0f"|format(analysis_data.pricing_data.pricing_analysis.premium_price) }}
+Confidence: {{ analysis_data.pricing_data.pricing_analysis.confidence|title }}
+{% endif %}
+
+Generated by Revend - Enhanced AI with User Refinement`;
+            
+            const fullText = listingText + pricingInfo;
+            
+            navigator.clipboard.writeText(fullText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Refined Listing Copied!';
+                btn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                }, 4000);
+            }).catch(() => {
+                alert('Refined listing copied! You can now paste it into any marketplace.');
+            });
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
