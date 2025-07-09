@@ -22,7 +22,12 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    return OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        print('ERROR: OPENAI_API_KEY not found')
+        raise ValueError('OpenAI API key not configured')
+    print(f'DEBUG: API key found, length: {len(api_key)}')
+    return OpenAI(api_key=api_key)
     api_key = os.getenv("OPENAI_API_KEY")
     print(f"DEBUG: API key present: {api_key is not None}")
     print(f"DEBUG: API key starts with: {api_key[:7] if api_key else None}...")
