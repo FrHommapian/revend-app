@@ -431,37 +431,19 @@
             left: 100%;
         }
         
-        .refinement-section {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            color: white;
-            padding: 32px;
-            border-radius: 28px;
-            margin-bottom: 32px;
-            box-shadow: 0 16px 48px rgba(108,117,125,0.3);
+        .3);
             position: relative;
             overflow: hidden;
             z-index: 2;
             animation: fadeInUp 0.8s ease-out 0.3s both;
         }
         
-        .refinement-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 20px,
-                rgba(255,255,255,0.03) 20px,
+        .03) 20px,
                 rgba(255,255,255,0.03) 40px
             );
         }
         
-        .refinement-form {
-            background: rgba(255,255,255,0.95);
+        .95);
             padding: 28px;
             border-radius: 20px;
             margin-top: 24px;
@@ -493,41 +475,20 @@
             margin-bottom: 10px;
         }
         
-        .refine-btn {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            border-radius: 16px;
-            padding: 16px 32px;
-            font-weight: 700;
-            color: white;
-            width: 100%;
-            margin-top: 24px;
-            transition: all 0.3s ease;
+        .3s ease;
             box-shadow: 0 8px 24px rgba(220,53,69,0.3);
             position: relative;
             overflow: hidden;
         }
         
-        .refine-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        .3), transparent);
             transition: left 0.5s ease;
         }
         
-        .refine-btn:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(220,53,69,0.4);
+        .4);
         }
         
-        .refine-btn:hover::before {
-            left: 100%;
-        }
+        
         
         .toggle-btn {
             background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
@@ -580,7 +541,7 @@
             .price-grid { grid-template-columns: 1fr; }
             .card { margin: 0 16px 32px; }
             .price-section { margin: 0 16px 32px; }
-            .refinement-section { margin: 0 16px 32px; }
+            
             .logo { font-size: 2.2rem; }
         }
     </style>
@@ -622,23 +583,7 @@
             {% endif %}
         </div>
         
-        <div class="refinement-section">
-            <div style="text-align: center; margin-bottom: 24px; position: relative; z-index: 1;">
-                <h4 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Need to adjust details?</h4>
-                <button class="toggle-btn" onclick="toggleRefinement()" id="refinementToggle">Edit details</button>
-            </div>
-            <div class="refinement-form" id="refinementForm" style="display: none;">
-                <form action="/refine-analysis" method="POST" id="refineForm">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Brand</label>
-                            <input type="text" class="form-control" name="brand" value="{{ analysis_data.analysis_json.brand if analysis_data.analysis_json.brand != 'Unknown' else '' }}" placeholder="e.g., Apple, Nike">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Model</label>
-                            <input type="text" class="form-control" name="model" value="{{ analysis_data.analysis_json.model if analysis_data.analysis_json.model != 'Unknown' else '' }}" placeholder="e.g., iPhone 15">
-                        </div>
-                    </div>
+        
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Condition</label>
@@ -704,21 +649,14 @@
                 <div class="card-title">Your listing</div>
             </div>
             <div style="padding: 32px;">
-                <textarea class="listing-content" id="listing-content" rows="12">{{ listing }}</textarea>
+                <textarea class="listing-content" id="listing-content" rows="8" placeholder="Edit your listing here...">{{ listing }}</textarea>
                 <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy edited listing</button>
             </div>
         </div>
     </div>
     
     <script>
-        function toggleRefinement() {
-            const form = document.getElementById('refinementForm');
-            const button = document.getElementById('refinementToggle');
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-                button.textContent = 'Cancel';
-            } else {
-                form.style.display = 'none';
+                        form.style.display = 'none';
                 button.textContent = 'Edit details';
             }
         }
