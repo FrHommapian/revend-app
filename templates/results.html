@@ -628,7 +628,7 @@
                 <button class="toggle-btn" onclick="toggleRefinement()" id="refinementToggle">Edit details</button>
             </div>
             <div class="refinement-form" id="refinementForm" style="display: none;">
-                <form id="refineForm">
+                <form action="/refine-analysis" method="POST" id="refineForm">
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Brand</label>
@@ -723,20 +723,7 @@
             }
         }
         
-        document.getElementById('refineForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const submitBtn = document.querySelector('.refine-btn');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Updating...';
-            submitBtn.disabled = true;
-            const formData = new FormData(this);
-            fetch('/refine-analysis', { method: 'POST', body: formData })
-            .then(() => window.location.reload())
-            .catch(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            });
-        });
+        // Form now uses standard HTML submission
         
         function copyListing() {
             const listingText = document.getElementById('listing-content').innerText;
