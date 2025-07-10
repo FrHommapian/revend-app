@@ -443,9 +443,12 @@ def analyze():
         flash('Error processing request')
         return redirect(url_for('index'))
 
-@app.route('/refine-analysis', methods=['POST'])
+@app.route('/refine-analysis', methods=['GET', 'POST'])
 def refine_analysis():
     try:
+        if request.method == 'GET':
+            return redirect(url_for('index'))
+            
         original_analysis = session.get('current_analysis')
         if not original_analysis:
             return redirect(url_for('index'))
