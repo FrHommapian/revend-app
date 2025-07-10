@@ -704,8 +704,8 @@
                 <div class="card-title">Your listing</div>
             </div>
             <div style="padding: 32px;">
-                <div class="listing-content" id="listing-content">{{ listing }}</div>
-                <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy listing</button>
+                <textarea class="listing-content" id="listing-content" rows="12">{{ listing }}</textarea>
+                <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy edited listing</button>
             </div>
         </div>
     </div>
@@ -726,7 +726,7 @@
         // Form now uses standard HTML submission
         
         function copyListing() {
-            const listingText = document.getElementById('listing-content').innerText;
+            const listingText = document.getElementById('listing-content').value;
             const btn = document.getElementById('copyBtn');
             const originalText = btn.textContent;
             
