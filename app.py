@@ -445,6 +445,8 @@ def analyze():
 
 @app.route('/refine-analysis', methods=['GET', 'POST'])
 def refine_analysis():
+    print(f'DEBUG: refine_analysis called with method: {request.method}')
+    logger.info(f'DEBUG: refine_analysis called with method: {request.method}')
     try:
         if request.method == 'GET':
             return redirect(url_for('index'))
