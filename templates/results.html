@@ -451,29 +451,11 @@
             border: 2px solid rgba(255,255,255,0.2);
         }
         
-        .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 16px;
-            padding: 14px 20px;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            background: rgba(255,255,255,0.9);
-        }
         
-        .form-control:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.15);
-            transform: translateY(-2px);
-            background: white;
-        }
         
-        .form-label {
-            font-weight: 700;
-            color: #495057;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-        }
+        
+        
+        
         
         .3s ease;
             box-shadow: 0 8px 24px rgba(220,53,69,0.3);
@@ -490,41 +472,13 @@
         
         
         
-        .toggle-btn {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            border: none;
-            border-radius: 16px;
-            padding: 16px 32px;
-            font-weight: 700;
-            color: white;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 24px rgba(108,117,125,0.3);
-            position: relative;
-            z-index: 1;
-            overflow: hidden;
-        }
         
-        .toggle-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
         
-        .toggle-btn:hover {
-            background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(108,117,125,0.4);
-        }
         
-        .toggle-btn:hover::before {
-            left: 100%;
-        }
+        
+        
+        
+        
         
         @keyframes fadeInUp {
             from {
@@ -586,21 +540,15 @@
         
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label">Condition</label>
-                            <select class="form-control" name="condition">
-                                <option value="excellent" {{ 'selected' if analysis_data.analysis_json.condition == 'excellent' else '' }}>Excellent</option>
-                                <option value="very_good" {{ 'selected' if analysis_data.analysis_json.condition == 'very_good' else '' }}>Very good</option>
-                                <option value="good" {{ 'selected' if analysis_data.analysis_json.condition == 'good' else '' }}>Good</option>
-                                <option value="fair" {{ 'selected' if analysis_data.analysis_json.condition == 'fair' else '' }}>Fair</option>
-                                <option value="poor" {{ 'selected' if analysis_data.analysis_json.condition == 'poor' else '' }}>Poor</option>
-                            </select>
+                            
+                            
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Additional notes</label>
-                            <textarea class="form-control" name="additional_notes" rows="2" placeholder="Any damage or special features..."></textarea>
+                            
+                            
                         </div>
                     </div>
-                    <button type="submit" class="refine-btn">Update pricing</button>
+                    
                 </form>
             </div>
         </div>
