@@ -762,23 +762,33 @@
         }
         
         .timing-optimal {
-            border-left-color: #28a745;
-            background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
         }
         
         .timing-peak {
             border-left-color: #dc3545;
-            background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
         }
         
         .timing-high {
             border-left-color: #dc3545;
-            background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
         }
         
         .timing-normal {
-            border-left-color: #17a2b8;
-            background: linear-gradient(135deg, #d1ecf1 0%, #ffffff 100%);
+            border-left-color: #6c757d;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .timing-good {
+            border-left-color: #6c757d;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .timing-wait {
+            border-left-color: #6c757d;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         }
         
         .timing-icon {
@@ -893,13 +903,13 @@
         <!-- Timing Insights Section -->
         {% if analysis_data.timing_insights %}
         <div class="card">
-            <div class="card-header">
-                <div class="card-title">⏰ Premium Timing Insights</div>
+            <div class="card-header" style="text-align: center;">
+                <div class="card-title">⏱️ Premium Timing Insights</div>
             </div>
             <div class="timing-insights-container">
                 <!-- Optimal timing -->
                 <div class="timing-card timing-{{ analysis_data.timing_insights.optimal_timing.status }}">
-                    <div class="timing-icon">🎯</div>
+                    <div class="timing-icon">◉</div>
                     <div class="timing-content">
                         <h4>Optimal timing</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.optimal_timing.message }}</p>
@@ -913,7 +923,7 @@
                     <div class="timing-content">
                         <h4>Seasonal trends</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.seasonal_analysis.message }}</p>
-                        <p class="timing-tip">💡 {{ analysis_data.timing_insights.seasonal_analysis.tip }}</p>
+                        <p class="timing-tip">◉ {{ analysis_data.timing_insights.seasonal_analysis.tip }}</p>
                     </div>
                 </div>
                 
@@ -923,13 +933,13 @@
                     <div class="timing-content">
                         <h4>Market urgency</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.urgency_indicator.message }}</p>
-                        <p class="timing-advice">📋 {{ analysis_data.timing_insights.urgency_indicator.advice }}</p>
+                        <p class="timing-advice">◼ {{ analysis_data.timing_insights.urgency_indicator.advice }}</p>
                     </div>
                 </div>
                 
                 <!-- Platform timing -->
                 <div class="timing-card timing-normal">
-                    <div class="timing-icon">📱</div>
+                    <div class="timing-icon">💻</div>
                     <div class="timing-content">
                         <h4>Platform timing</h4>
                         <div class="platform-timing-list">
@@ -942,7 +952,7 @@
                 
                 <!-- Next Best Time -->
                 <div class="timing-summary">
-                    <h4>📅 Next best time to list</h4>
+                    <h4>🗓️ Next best time to list</h4>
                     <p class="next-best-time">{{ analysis_data.timing_insights.next_best_time }}</p>
                 </div>
             </div>
@@ -957,28 +967,28 @@
                 {% if analysis_data.analysis_json %}
                     {% set item = analysis_data.analysis_json %}
                     <div class="detail-item">
-                        <div class="detail-icon">📦</div>
+                        <div class="detail-icon">◼</div>
                         <div class="detail-content">
                             <div class="detail-label">Item</div>
                             <div class="detail-value">{{ item.description|title }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">🏷️</div>
+                        <div class="detail-icon">◉</div>
                         <div class="detail-content">
                             <div class="detail-label">Brand</div>
                             <div class="detail-value">{{ item.brand }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">📱</div>
+                        <div class="detail-icon">💻</div>
                         <div class="detail-content">
                             <div class="detail-label">Model</div>
                             <div class="detail-value">{{ item.model }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">✅</div>
+                        <div class="detail-icon">✓</div>
                         <div class="detail-content">
                             <div class="detail-label">Condition</div>
                             <div class="detail-value">{{ item.condition|title }}</div>
