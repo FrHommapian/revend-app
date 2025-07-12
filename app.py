@@ -382,7 +382,7 @@ def generate_category_listing(analysis_data):
                     'content': f"I'm selling my {brand} {model} {specific_item} in {condition} condition for . Please contact me for more details."
                 }
         
-        return listings
+        return listings.get('general', {}).get('content', f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details.")
         
     except Exception as e:
         logger.error(f"Error generating listings: {e}")
@@ -418,8 +418,8 @@ def analyze():
             return redirect(url_for('index'))
         
         session['current_analysis'] = analysis_data
-        listings = generate_category_listing(analysis_data)
-        return render_template('results.html', analysis_data=analysis_data, listings=listings)
+        listing = generate_category_listing(analysis_data)
+        return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
         logger.error(f"Error: {e}")

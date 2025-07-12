@@ -806,33 +806,15 @@
         
         <div class="card">
             <div class="card-header">
-                <div class="card-title">Your listings</div>
+                <div class="card-title">Your listing</div>
             </div>
             <div style="padding: 32px;">
-                <!-- Platform Tabs -->
-                <div class="platform-tabs" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
-                    {% for platform_key, platform_data in listings.items() %}
-                    <button class="platform-tab {% if loop.first %}active{% endif %}" 
-                            onclick="showPlatform('{{ platform_key }}')" 
-                            id="tab-{{ platform_key }}">
-                        {{ platform_data.name }}
-                    </button>
-                    {% endfor %}
+                <div class="listing-container">
+                    <textarea id="listing-content" class="simple-textarea">{{ listing }}</textarea>
                 </div>
-                
-                <!-- Platform Content -->
-                {% for platform_key, platform_data in listings.items() %}
-                <div class="platform-content {% if not loop.first %}hidden{% endif %}" id="content-{{ platform_key }}">
-                    <div class="listing-container">
-                        <textarea id="listing-{{ platform_key }}" class="simple-textarea">{{ platform_data.content }}</textarea>
-                    </div>
-                    <div class="button-container">
-                        <button class="copy-btn" onclick="copyListing('{{ platform_key }}')" id="copyBtn-{{ platform_key }}">
-                            Copy {{ platform_data.name }} listing
-                        </button>
-                    </div>
+                <div class="button-container">
+                    <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy listing</button>
                 </div>
-                {% endfor %}
             </div>
         </div>
     </div>
@@ -866,43 +848,9 @@
         });
         
         
-        function showPlatform(platformKey) {
-            console.log('🔥 showPlatform called with:', platformKey);
-            
-            // Hide all platform content
-            const allContent = document.querySelectorAll('.platform-content');
-            console.log('📦 Found platform content elements:', allContent.length);
-            allContent.forEach(content => {
-                content.classList.add('hidden');
-                console.log('🔒 Hidden:', content.id);
-            });
-            
-            // Remove active class from all tabs
-            const allTabs = document.querySelectorAll('.platform-tab');
-            allTabs.forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected platform content
-            const targetContent = document.getElementById('content-' + platformKey);
-            if (targetContent) {
-                targetContent.classList.remove('hidden');
-                console.log('🔓 Showing:', targetContent.id);
-            } else {
-                console.error('❌ Target content not found:', 'content-' + platformKey);
-            }
-            
-            // Add active class to selected tab
-            const targetTab = document.getElementById('tab-' + platformKey);
-            if (targetTab) {
-                targetTab.classList.add('active');
-                console.log('✅ Activated tab:', targetTab.id);
-            }
-        }
-        
-        function copyListing(platformKey) {
-            const listingText = document.getElementById('listing-' + platformKey).value;
-            const btn = document.getElementById('copyBtn-' + platformKey);
+        function copyListing() {
+            const listingText = document.getElementById('listing-content').value;
+            const btn = document.getElementById('copyBtn');
             const originalText = btn.textContent;
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
