@@ -25,7 +25,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 0%;
             height: 100%;
             pointer-events: none;
             z-index: 1;
@@ -134,7 +134,7 @@
             position: absolute;
             top: 0;
             left: -100%;
-            width: 100%;
+            width: 0%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(220,53,69,0.1), transparent);
             transition: left 0.6s ease;
@@ -179,7 +179,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 0%;
             height: 100%;
             opacity: 0;
             cursor: pointer;
@@ -206,7 +206,7 @@
             position: absolute;
             top: 0;
             left: -100%;
-            width: 100%;
+            width: 0%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             transition: left 0.5s ease;
@@ -230,7 +230,7 @@
             font-weight: 800;
             font-size: 1.2rem;
             color: white;
-            width: 100%;
+            width: 0%;
             margin-top: -20px;
             transition: all 0.3s ease;
             position: relative;
@@ -349,7 +349,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 0%;
             height: 100%;
             background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,249,250,0.98) 100%);
             display: none;
@@ -407,7 +407,7 @@
         }
         
         .progress-container {
-            width: 100%;
+            width: 0%;
             margin-bottom: 28px;
         }
         
@@ -483,7 +483,7 @@
             background: #6b7280;
         }
         .loading-progress {
-            width: 100%;
+            width: 0%;
             height: 8px;
             background-color: #e9ecef;
             border-radius: 4px;
@@ -644,28 +644,37 @@
         });
     
         // Animated loading bar
-        function startLoadingProgress() {
-            const progressBar = document.querySelector('.loading-progress-bar');
-            if (!progressBar) return;
-            
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 12 + 3; // Random increment 3-15%
-                if (progress > 95) progress = 95; // Cap at 95%
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 95) {
-                    clearInterval(interval);
-                    // Complete when page actually loads
-                    window.addEventListener('beforeunload', () => {
-                        progressBar.style.width = '100%';
-                    });
-                }
-            }, 600); // Update every 600ms for smooth animation
+        </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.querySelector('.loading-progress-bar');
+    if (!progressBar) return;
+    
+    let progress = 0;
+    
+    function updateProgress() {
+        if (progress < 20) {
+            progress += Math.random() * 3 + 1; // 1-4% increments
+        } else if (progress < 50) {
+            progress += Math.random() * 2 + 0.5; // 0.5-2.5% increments
+        } else if (progress < 80) {
+            progress += Math.random() * 1.5 + 0.3; // 0.3-1.8% increments
+        } else if (progress < 95) {
+            progress += Math.random() * 0.8 + 0.1; // 0.1-0.9% increments
         }
         
-        // Start progress when analysis begins
-        document.addEventListener('DOMContentLoaded', startLoadingProgress);
-</script>
-</body>
+        if (progress > 95) progress = 95; // Cap at 95%
+        
+        progressBar.style.width = progress + '%';
+        
+        if (progress < 95) {
+            setTimeout(updateProgress, 600 + Math.random() * 400); // 600-1000ms intervals
+        }
+    }
+    
+    // Start the animation
+    updateProgress();
+});
+</script></body>
 </html>
