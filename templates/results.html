@@ -329,126 +329,69 @@
             color: #212529;
         }
         
+        .listing-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 36px;
+            border-radius: 24px;
+            border: 3px solid #dc3545;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(220,53,69,0.1);
+        }
         
-        
+        .listing-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+            border-radius: 24px 24px 0 0;
+        }
         
         .copy-btn {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            color: white;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             border: none;
-            padding: 16px 32px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-            text-transform: none;
-            letter-spacing: 0.5px;
-            margin-top: 20px;
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
             width: 100%;
-            max-width: 300px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(220,53,69,0.3);
+        }
+        
+        .copy-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
         }
         
         .copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(229, 62, 62, 0.4);
-            background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(220,53,69,0.4);
         }
         
-        .copy-btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
+        .copy-btn:hover::before {
+            left: 100%;
         }
         
-        
-        .copy-btn {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-            text-transform: none;
-            letter-spacing: 0.5px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(229, 62, 62, 0.4);
-            background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
-        }
-        
-        .copy-btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-        }
-        
-        
-        .copy-btn {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-            text-transform: none;
-            letter-spacing: 0.5px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(229, 62, 62, 0.4);
-            background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
-        }
-        
-        .copy-btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-        }
-        
-        
-        .copy-btn {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
-            text-transform: none;
-            letter-spacing: 0.5px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(229, 62, 62, 0.4);
-            background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
-        }
-        
-        .copy-btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
+        .copy-btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            transform: scale(1.05);
         }
         
         .btn-secondary {
@@ -488,19 +431,37 @@
             left: 100%;
         }
         
-        .3);
+        .refinement-section {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 16px 48px rgba(108,117,125,0.3);
             position: relative;
             overflow: hidden;
             z-index: 2;
             animation: fadeInUp 0.8s ease-out 0.3s both;
         }
         
-        .03) 20px,
+        .refinement-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(255,255,255,0.03) 20px,
                 rgba(255,255,255,0.03) 40px
             );
         }
         
-        .95);
+        .refinement-form {
+            background: rgba(255,255,255,0.95);
             padding: 28px;
             border-radius: 20px;
             margin-top: 24px;
@@ -508,34 +469,101 @@
             border: 2px solid rgba(255,255,255,0.2);
         }
         
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
         
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.15);
+            transform: translateY(-2px);
+            background: white;
+        }
         
+        .form-label {
+            font-weight: 700;
+            color: #495057;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
         
-        
-        
-        
-        .3s ease;
+        .refine-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-weight: 700;
+            color: white;
+            width: 100%;
+            margin-top: 24px;
+            transition: all 0.3s ease;
             box-shadow: 0 8px 24px rgba(220,53,69,0.3);
             position: relative;
             overflow: hidden;
         }
         
-        .3), transparent);
+        .refine-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             transition: left 0.5s ease;
         }
         
-        .4);
+        .refine-btn:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(220,53,69,0.4);
         }
         
+        .refine-btn:hover::before {
+            left: 100%;
+        }
         
+        .toggle-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-weight: 700;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(108,117,125,0.3);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
         
+        .toggle-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
         
+        .toggle-btn:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(108,117,125,0.4);
+        }
         
-        
-        
-        
-        
-        
+        .toggle-btn:hover::before {
+            left: 100%;
+        }
         
         @keyframes fadeInUp {
             from {
@@ -552,52 +580,70 @@
             .price-grid { grid-template-columns: 1fr; }
             .card { margin: 0 16px 32px; }
             .price-section { margin: 0 16px 32px; }
-            
+            .refinement-section { margin: 0 16px 32px; }
             .logo { font-size: 2.2rem; }
         }
     
-        .listing-container {
-            margin: 20px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(229, 62, 62, 0.3);
+        .platform-tabs {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
         }
         
-        .simple-textarea {
-            width: 100%;
-            height: 250px;
-            padding: 20px;
-            border: none;
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        .platform-tab {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            color: #6c757d;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-transform: none;
+            letter-spacing: 0.5px;
+        }
+        
+        .platform-tab:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .platform-tab.active {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
-            font-size: 16px;
-            line-height: 1.4;
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            resize: none;
-            outline: none;
-            overflow-y: auto;
-            -webkit-appearance: none;
-            border-radius: 0;
+            border-color: #dc3545;
+            box-shadow: 0 4px 16px rgba(220,53,69,0.3);
         }
         
-        .simple-textarea:focus {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        .platform-content {
+            animation: fadeIn 0.3s ease-in-out;
         }
         
-        /* Mobile specific fixes */
+        .platform-content.hidden {
+            display: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         @media (max-width: 768px) {
-            .simple-textarea {
-                font-size: 14px;
-                height: 200px;
-                -webkit-overflow-scrolling: touch;
+            .platform-tabs {
+                gap: 8px;
+            }
+            
+            .platform-tab {
+                padding: 10px 16px;
+                font-size: 13px;
+                flex: 1;
+                text-align: center;
+                min-width: 80px;
             }
         }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }</style>
+</style>
 </head>
 <body>
     <div class="floating-shapes">
@@ -636,18 +682,40 @@
             {% endif %}
         </div>
         
-        
+        <div class="refinement-section">
+            <div style="text-align: center; margin-bottom: 24px; position: relative; z-index: 1;">
+                <h4 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Need to adjust details?</h4>
+                <button class="toggle-btn" onclick="toggleRefinement()" id="refinementToggle">Edit details</button>
+            </div>
+            <div class="refinement-form" id="refinementForm" style="display: none;">
+                <form id="refineForm">
                     <div class="row">
                         <div class="col-md-6">
-                            
-                            
+                            <label class="form-label">Brand</label>
+                            <input type="text" class="form-control" name="brand" value="{{ analysis_data.analysis_json.brand if analysis_data.analysis_json.brand != 'Unknown' else '' }}" placeholder="e.g., Apple, Nike">
                         </div>
                         <div class="col-md-6">
-                            
-                            
+                            <label class="form-label">Model</label>
+                            <input type="text" class="form-control" name="model" value="{{ analysis_data.analysis_json.model if analysis_data.analysis_json.model != 'Unknown' else '' }}" placeholder="e.g., iPhone 15">
                         </div>
                     </div>
-                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Condition</label>
+                            <select class="form-control" name="condition">
+                                <option value="excellent" {{ 'selected' if analysis_data.analysis_json.condition == 'excellent' else '' }}>Excellent</option>
+                                <option value="very_good" {{ 'selected' if analysis_data.analysis_json.condition == 'very_good' else '' }}>Very good</option>
+                                <option value="good" {{ 'selected' if analysis_data.analysis_json.condition == 'good' else '' }}>Good</option>
+                                <option value="fair" {{ 'selected' if analysis_data.analysis_json.condition == 'fair' else '' }}>Fair</option>
+                                <option value="poor" {{ 'selected' if analysis_data.analysis_json.condition == 'poor' else '' }}>Poor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Additional notes</label>
+                            <textarea class="form-control" name="additional_notes" rows="2" placeholder="Any damage or special features..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="refine-btn">Update pricing</button>
                 </form>
             </div>
         </div>
@@ -696,27 +764,62 @@
                 <div class="card-title">Your listing</div>
             </div>
             <div style="padding: 32px;">
-                <div class="listing-container">
-                    <textarea id="listing-content" class="simple-textarea">{{ listing }}</textarea>
-                </div>
-                <div class="button-container">
-                    <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy edited listing</button>
-                </div>
+                <div class="listing-content" id="listing-content">{{ listing }}</div>
+                <button class="copy-btn" onclick="copyListing()" id="copyBtn">Copy listing</button>
             </div>
         </div>
     </div>
     
     <script>
-                        form.style.display = 'none';
+        function toggleRefinement() {
+            const form = document.getElementById('refinementForm');
+            const button = document.getElementById('refinementToggle');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                button.textContent = 'Cancel';
+            } else {
+                form.style.display = 'none';
                 button.textContent = 'Edit details';
             }
         }
         
-        // Form now uses standard HTML submission
+        document.getElementById('refineForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.querySelector('.refine-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Updating...';
+            submitBtn.disabled = true;
+            const formData = new FormData(this);
+            fetch('/refine-analysis', { method: 'POST', body: formData })
+            .then(() => window.location.reload())
+            .catch(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
         
-        function copyListing() {
-            const listingText = document.getElementById('listing-content').value;
-            const btn = document.getElementById('copyBtn');
+        
+        function showPlatform(platformKey) {
+            // Hide all platform content
+            document.querySelectorAll('.platform-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected platform content
+            document.getElementById('content-' + platformKey).classList.remove('hidden');
+            
+            // Add active class to selected tab
+            document.getElementById('tab-' + platformKey).classList.add('active');
+        }
+        
+        function copyListing(platformKey) {
+            const listingText = document.getElementById('listing-' + platformKey).value;
+            const btn = document.getElementById('copyBtn-' + platformKey);
             const originalText = btn.textContent;
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -729,6 +832,14 @@
                         btn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
                         btn.classList.remove('success');
                     }, 2000);
+                }).catch(() => {
+                    fallbackCopy(listingText, btn, originalText);
+                });
+            } else {
+                fallbackCopy(listingText, btn, originalText);
+            }
+        }
+, 2000);
                 }).catch(() => {
                     fallbackCopy(listingText, btn, originalText);
                 });

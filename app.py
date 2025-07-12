@@ -22,17 +22,7 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        print('ERROR: OPENAI_API_KEY not found')
-        raise ValueError('OpenAI API key not configured')
-    print(f'DEBUG: API key found, length: {len(api_key)}')
-    return OpenAI(api_key=api_key)
-    api_key = os.getenv("OPENAI_API_KEY")
-    print(f"DEBUG: API key present: {api_key is not None}")
-    print(f"DEBUG: API key starts with: {api_key[:7] if api_key else None}...")
-    if not api_key:
-        print("ERROR: OPENAI_API_KEY not found in environment")
+    return OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 pricing_engine = RealPricingEngine()
 
@@ -339,75 +329,69 @@ def generate_category_listing(analysis_data):
         
         analysis_text = analysis_data.get('analysis', '')
         
-        logger.info(f"📝 GENERATING LISTING FOR:")
-        logger.info(f"   Item: {specific_item}")
-        logger.info(f"   Brand: {brand}")
-        logger.info(f"   Model: {model}")
-        logger.info(f"   Category: {category}")
-        logger.info(f"   Price: ${market_value}")
+        logger.info(f"📝 GENERATING MULTI-PLATFORM LISTINGS FOR: {specific_item}")
         
         client = get_openai_client()
         
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"""Create an Australian marketplace listing for this SPECIFIC item:
-
-ITEM DETAILS:
-- Item: {specific_item}
-- Brand: {brand}
-- Model: {model}
-- Condition: {condition}
-- Category: {category}
-- Price: ${market_value}
-
-ANALYSIS DATA: {analysis_text}
-
-CRITICAL REQUIREMENTS:
-1. Write about the EXACT item: {brand} {model} {specific_item}
-2. Price: Ask for ${market_value}
-3. Write as an Australian seller
-4. Personal story about owning this {specific_item}
-5. Why selling this {specific_item}
-6. Care and usage details
-7. 150-250 words
-8. No emojis
-9. Sound authentic and trustworthy
-
-MAKE SURE THE LISTING IS ABOUT THE {specific_item}, NOT ANYTHING ELSE!"""
+        platforms = {
+            'general': {
+                'name': 'General',
+                'prompt': f"""Create an Australian marketplace listing for this {brand} {model} {specific_item} in {condition} condition for . Write 150-250 words as an Australian seller with personal story. No emojis."""
+            },
+            'ebay': {
+                'name': 'eBay',
+                'prompt': f"""Create professional eBay listing for {brand} {model} {specific_item} - {condition} condition. Include specifications, shipping info. 180-220 words. End with 'Buy with confidence!'"""
+            },
+            'facebook': {
+                'name': 'Facebook Marketplace',
+                'prompt': f"""Create casual Facebook Marketplace listing for {brand} {model} {specific_item}. Local pickup focus, personal touch. 120-160 words. Start with 'Selling my...' End with 'Message me if interested!'"""
+            },
+            'gumtree': {
+                'name': 'Gumtree',
+                'prompt': f"""Create straightforward Gumtree listing for {brand} {model} {specific_item} for sale. Price . Pickup/delivery options. 140-180 words. End with 'Serious buyers only'."""
+            },
+            'mercari': {
+                'name': 'Mercari',
+                'prompt': f"""Create mobile-friendly Mercari listing for {brand} {model} {specific_item}. Condition: {condition}. Quick sale focus. 100-140 words. End with 'Fast shipping!'"""
+            }
+        }
+        
+        listings = {}
+        
+        for platform_key, platform_info in platforms.items():
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": platform_info['prompt']}],
+                    max_tokens=400,
+                    temperature=0.3
+                )
+                
+                generated_listing = response.choices[0].message.content
+                listings[platform_key] = {
+                    'name': platform_info['name'],
+                    'content': generated_listing
                 }
-            ],
-            max_tokens=400,
-            temperature=0.3
-        )
+                
+                logger.info(f"✅ Generated {platform_info['name']} listing")
+                
+            except Exception as e:
+                logger.error(f"Error generating {platform_info['name']} listing: {e}")
+                listings[platform_key] = {
+                    'name': platform_info['name'],
+                    'content': f"I'm selling my {brand} {model} {specific_item} in {condition} condition for . Please contact me for more details."
+                }
         
-        generated_listing = response.choices[0].message.content
+        return listings
         
-        if specific_item.lower() not in generated_listing.lower() and brand.lower() not in generated_listing.lower():
-            logger.warning(f"⚠️ LISTING DOESN'T MENTION CORRECT ITEM - REGENERATING")
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"""You are selling a {brand} {model} {specific_item} for ${market_value}.
-
-Write ONLY about this {specific_item}. Do NOT write about any other item.
-
-Start with: "I'm selling my {brand} {model} {specific_item}..."
-
-150 words, Australian seller, asking ${market_value}."""
-                    }
-                ],
-                max_tokens=300,
-                temperature=0.1
-            )
-            generated_listing = response.choices[0].message.content
-        
-        logger.info(f"✅ Generated listing for {specific_item}")
-        return generated_listing
+    except Exception as e:
+        logger.error(f"Error generating listings: {e}")
+        return {
+            'general': {
+                'name': 'General',
+                'content': f"I'm selling my {brand} {model} {specific_item} in {condition} condition for . Please contact me for more details."
+            }
+        }
         
     except Exception as e:
         logger.error(f"Error generating listing: {e}")
@@ -434,13 +418,55 @@ def analyze():
             return redirect(url_for('index'))
         
         session['current_analysis'] = analysis_data
-        listing = generate_category_listing(analysis_data)
-        
-        return render_template('results.html', analysis_data=analysis_data, listing=listing)
+        listings = generate_category_listing(analysis_data)
+        return render_template('results.html', analysis_data=analysis_data, listings=listings)
         
     except Exception as e:
         logger.error(f"Error: {e}")
         flash('Error processing request')
+        return redirect(url_for('index'))
+
+@app.route('/refine-analysis', methods=['POST'])
+def refine_analysis():
+    try:
+        original_analysis = session.get('current_analysis')
+        if not original_analysis:
+            return redirect(url_for('index'))
+        
+        condition = request.form.get('condition', original_analysis['analysis_json']['condition']).strip()
+        additional_notes = request.form.get('additional_notes', '').strip()
+        
+        original_price = original_analysis['pricing_data']['pricing_analysis']['market_value']
+        
+        condition_multipliers = {'excellent': 1.2, 'very_good': 1.0, 'good': 0.85, 'fair': 0.65, 'poor': 0.45, 'damaged': 0.25}
+        
+        damage_keywords = ['crack', 'broken', 'damage', 'chip', 'scratch', 'dent', 'worn']
+        damage_multiplier = 0.7 if any(keyword in additional_notes.lower() for keyword in damage_keywords) else 1.0
+        
+        original_condition = original_analysis['analysis_json']['condition']
+        original_multiplier = condition_multipliers.get(original_condition, 1.0)
+        new_multiplier = condition_multipliers.get(condition, 1.0)
+        
+        base_price = original_price / original_multiplier
+        adjusted_price = base_price * new_multiplier * damage_multiplier
+        
+        new_market_value = round(adjusted_price, 0)
+        
+        updated_analysis = original_analysis.copy()
+        updated_analysis['analysis_json']['condition'] = condition
+        updated_analysis['pricing_data']['pricing_analysis']['market_value'] = new_market_value
+        updated_analysis['pricing_data']['pricing_analysis']['quick_sale'] = round(adjusted_price * 0.85, 0)
+        updated_analysis['pricing_data']['pricing_analysis']['premium_price'] = round(adjusted_price * 1.15, 0)
+        
+        session['current_analysis'] = updated_analysis
+        updated_listing = generate_category_listing(updated_analysis)
+        
+        logger.info(f"💰 PRICE ADJUSTED: ${original_price} → ${new_market_value}")
+        
+        return render_template('results.html', analysis_data=updated_analysis, listing=updated_listing, updated=True)
+        
+    except Exception as e:
+        logger.error(f"Error in refine-analysis: {e}")
         return redirect(url_for('index'))
 
 @app.route('/categories')
