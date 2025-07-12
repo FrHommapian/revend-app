@@ -12,7 +12,7 @@ import re
 import hashlib
 import time
 from pricing_engine import RealPricingEngine
-from timing_insights import timing_insights
+from timing_insights import get_timing_insights
 
 load_dotenv()
 
@@ -299,7 +299,7 @@ Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "exc
         category_info = MARKETPLACE_CATEGORIES.get(corrected_category, MARKETPLACE_CATEGORIES['electronics'])
         
         # Generate timing insights
-        timing_data = timing_insights.get_timing_insights(
+        timing_data = get_timing_insights(
             category=corrected_category,
             brand=brand,
             item_type=specific_item
