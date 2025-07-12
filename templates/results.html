@@ -825,6 +825,119 @@
             }
         }
 
+        
+        /* Timing Insights Styles */
+        .timing-insights-container {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .timing-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 6px solid #6c757d;
+        }
+        
+        .timing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+        }
+        
+        .timing-optimal {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+        }
+        
+        .timing-peak {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
+        }
+        
+        .timing-high {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
+        }
+        
+        .timing-normal {
+            border-left-color: #17a2b8;
+            background: linear-gradient(135deg, #d1ecf1 0%, #ffffff 100%);
+        }
+        
+        .timing-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        
+        .timing-content h4 {
+            margin: 0 0 12px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #212529;
+        }
+        
+        .timing-message {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .timing-action, .timing-tip, .timing-advice {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .platform-timing-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .platform-timing {
+            font-size: 0.9rem;
+            color: #495057;
+            margin: 0;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+        
+        .timing-summary {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            margin-top: 16px;
+        }
+        
+        .timing-summary h4 {
+            margin: 0 0 12px 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+        
+        .next-best-time {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .timing-insights-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+
         </style>
 </head>
 <body>
@@ -867,40 +980,70 @@
         <div class="refinement-section">
             <div style="text-align: center; margin-bottom: 24px; position: relative; z-index: 1;">
                 <h4 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Need to adjust details?</h4>
-                <button class="toggle-btn" onclick="toggleRefinement()" id="refinementToggle">Edit details</button>
+                
             </div>
             <div class="refinement-form" id="refinementForm" style="display: none;">
                 <form id="refineForm">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Brand</label>
-                            <input type="text" class="form-control" name="brand" value="{{ analysis_data.analysis_json.brand if analysis_data.analysis_json.brand != 'Unknown' else '' }}" placeholder="e.g., Apple, Nike">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Model</label>
-                            <input type="text" class="form-control" name="model" value="{{ analysis_data.analysis_json.model if analysis_data.analysis_json.model != 'Unknown' else '' }}" placeholder="e.g., iPhone 15">
+                    
+        
+        <!-- Timing Insights Section -->
+        {% if analysis_data.timing_insights %}
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⏰ Premium Timing Insights</div>
+            </div>
+            <div class="timing-insights-container">
+                <!-- Optimal Timing -->
+                <div class="timing-card timing-{{ analysis_data.timing_insights.optimal_timing.status }}">
+                    <div class="timing-icon">🎯</div>
+                    <div class="timing-content">
+                        <h4>Optimal Timing</h4>
+                        <p class="timing-message">{{ analysis_data.timing_insights.optimal_timing.message }}</p>
+                        <p class="timing-action">{{ analysis_data.timing_insights.optimal_timing.action }}</p>
+                    </div>
+                </div>
+                
+                <!-- Seasonal Analysis -->
+                <div class="timing-card timing-{{ analysis_data.timing_insights.seasonal_analysis.status }}">
+                    <div class="timing-icon">📈</div>
+                    <div class="timing-content">
+                        <h4>Seasonal Trends</h4>
+                        <p class="timing-message">{{ analysis_data.timing_insights.seasonal_analysis.message }}</p>
+                        <p class="timing-tip">💡 {{ analysis_data.timing_insights.seasonal_analysis.tip }}</p>
+                    </div>
+                </div>
+                
+                <!-- Urgency Indicator -->
+                <div class="timing-card timing-{{ analysis_data.timing_insights.urgency_indicator.level }}">
+                    <div class="timing-icon">⚡</div>
+                    <div class="timing-content">
+                        <h4>Market Urgency</h4>
+                        <p class="timing-message">{{ analysis_data.timing_insights.urgency_indicator.message }}</p>
+                        <p class="timing-advice">📋 {{ analysis_data.timing_insights.urgency_indicator.advice }}</p>
+                    </div>
+                </div>
+                
+                <!-- Platform Timing -->
+                <div class="timing-card timing-normal">
+                    <div class="timing-icon">📱</div>
+                    <div class="timing-content">
+                        <h4>Platform Timing</h4>
+                        <div class="platform-timing-list">
+                            {% for platform, timing in analysis_data.timing_insights.platform_recommendations.items() %}
+                            <p class="platform-timing">{{ timing }}</p>
+                            {% endfor %}
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Condition</label>
-                            <select class="form-control" name="condition">
-                                <option value="excellent" {{ 'selected' if analysis_data.analysis_json.condition == 'excellent' else '' }}>Excellent</option>
-                                <option value="very_good" {{ 'selected' if analysis_data.analysis_json.condition == 'very_good' else '' }}>Very good</option>
-                                <option value="good" {{ 'selected' if analysis_data.analysis_json.condition == 'good' else '' }}>Good</option>
-                                <option value="fair" {{ 'selected' if analysis_data.analysis_json.condition == 'fair' else '' }}>Fair</option>
-                                <option value="poor" {{ 'selected' if analysis_data.analysis_json.condition == 'poor' else '' }}>Poor</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Additional notes</label>
-                            <textarea class="form-control" name="additional_notes" rows="2" placeholder="Any damage or special features..."></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="refine-btn">Update pricing</button>
-                </form>
+                </div>
+                
+                <!-- Next Best Time -->
+                <div class="timing-summary">
+                    <h4>📅 Next Best Time to List</h4>
+                    <p class="next-best-time">{{ analysis_data.timing_insights.next_best_time }}</p>
+                </div>
             </div>
         </div>
+        {% endif %}
         
         <div class="card">
             <div class="card-header">
@@ -957,13 +1100,7 @@
     </div>
     
     <script>
-        function toggleRefinement() {
-            const form = document.getElementById('refinementForm');
-            const button = document.getElementById('refinementToggle');
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-                button.textContent = 'Cancel';
-            } else {
+         else {
                 form.style.display = 'none';
                 button.textContent = 'Edit details';
             }

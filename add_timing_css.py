@@ -1,7 +1,7 @@
 with open('templates/results.html', 'r') as f:
     content = f.read()
 
-# Add timing insights CSS
+# Add timing insights CSS before closing </style>
 timing_css = '''
         /* Timing Insights Styles */
         .timing-insights-container {
@@ -19,8 +19,6 @@ timing_css = '''
             box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
             border-left: 6px solid #6c757d;
-            position: relative;
-            overflow: hidden;
         }
         
         .timing-card:hover {
@@ -31,16 +29,6 @@ timing_css = '''
         .timing-optimal {
             border-left-color: #28a745;
             background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
-        }
-        
-        .timing-good {
-            border-left-color: #ffc107;
-            background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%);
-        }
-        
-        .timing-wait {
-            border-left-color: #dc3545;
-            background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
         }
         
         .timing-peak {
@@ -61,7 +49,6 @@ timing_css = '''
         .timing-icon {
             font-size: 2rem;
             margin-bottom: 12px;
-            display: inline-block;
         }
         
         .timing-content h4 {
@@ -82,7 +69,6 @@ timing_css = '''
             font-size: 0.9rem;
             color: #6c757d;
             margin-bottom: 0;
-            font-style: italic;
         }
         
         .platform-timing-list {
@@ -120,27 +106,16 @@ timing_css = '''
             font-size: 1.1rem;
             font-weight: 600;
             margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         @media (max-width: 768px) {
             .timing-insights-container {
                 grid-template-columns: 1fr;
                 padding: 20px;
-                gap: 16px;
-            }
-            
-            .timing-card {
-                padding: 20px;
-            }
-            
-            .timing-icon {
-                font-size: 1.5rem;
             }
         }
 '''
 
-# Insert CSS before closing </style>
 content = content.replace('</style>', timing_css + '\n        </style>')
 
 with open('templates/results.html', 'w') as f:
