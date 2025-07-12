@@ -656,11 +656,7 @@
             background: linear-gradient(135deg, #d1ecf1 0%, #ffffff 100%);
         }
         
-        .timing-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-            display: inline-block;
-        }
+        
         
         .timing-content h4 {
             margin: 0 0 12px 0;
@@ -732,9 +728,7 @@
                 padding: 20px;
             }
             
-            .timing-icon {
-                font-size: 1.5rem;
-            }
+            
         }
 
         
@@ -791,10 +785,7 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         }
         
-        .timing-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
+        
         
         .timing-content h4 {
             margin: 0 0 12px 0;
@@ -860,7 +851,140 @@
             }
         }
 
-        </style>
+        
+        
+
+        .timing-icon {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: white;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            padding: 8px 16px;
+            border-radius: 25px;
+            text-align: center;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            text-transform: uppercase;
+            min-width: 80px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .timing-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+        }
+        
+        /* Special styling for different card types */
+        .timing-normal .timing-icon {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .timing-normal .timing-icon:hover {
+            box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+        }
+        
+        /* Ensure consistent spacing */
+        .timing-content {
+            padding-top: 8px;
+        }
+        
+        .timing-content h4 {
+            margin: 8px 0 12px 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #212529;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .timing-message {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .timing-action, .timing-tip, .timing-advice {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0;
+            font-style: italic;
+            line-height: 1.3;
+        }
+        
+        /* Platform timing styling */
+        .platform-timing {
+            font-size: 0.85rem;
+            color: #495057;
+            margin: 0 0 8px 0;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            border-left: 4px solid #dc3545;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Summary section styling */
+        .timing-summary {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 28px;
+            border-radius: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 24px rgba(220, 53, 69, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .timing-summary h4 {
+            margin: 0 0 16px 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .next-best-time {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 24px;
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .timing-icon {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+                min-width: 70px;
+            }
+            
+            .timing-content h4 {
+                font-size: 1rem;
+            }
+            
+            .timing-message {
+                font-size: 0.9rem;
+            }
+            
+            .timing-action, .timing-tip, .timing-advice {
+                font-size: 0.8rem;
+            }
+        }
+</style>
 </head>
 <body>
     <div class="floating-shapes">
@@ -904,12 +1028,12 @@
         {% if analysis_data.timing_insights %}
         <div class="card">
             <div class="card-header" style="text-align: center;">
-                <div class="card-title">⏱️ Premium Timing Insights</div>
+                <div class="card-title">TIMING Premium Timing Insights</div>
             </div>
             <div class="timing-insights-container">
                 <!-- Optimal timing -->
                 <div class="timing-card timing-{{ analysis_data.timing_insights.optimal_timing.status }}">
-                    <div class="timing-icon">◉</div>
+                    <div class="timing-icon">OPTIMAL</div>
                     <div class="timing-content">
                         <h4>Optimal timing</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.optimal_timing.message }}</p>
@@ -919,27 +1043,27 @@
                 
                 <!-- Seasonal Analysis -->
                 <div class="timing-card timing-{{ analysis_data.timing_insights.seasonal_analysis.status }}">
-                    <div class="timing-icon">📈</div>
+                    <div class="timing-icon">GROWTH</div>
                     <div class="timing-content">
                         <h4>Seasonal trends</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.seasonal_analysis.message }}</p>
-                        <p class="timing-tip">◉ {{ analysis_data.timing_insights.seasonal_analysis.tip }}</p>
+                        <p class="timing-tip">OPTIMAL {{ analysis_data.timing_insights.seasonal_analysis.tip }}</p>
                     </div>
                 </div>
                 
                 <!-- Urgency Indicator -->
                 <div class="timing-card timing-{{ analysis_data.timing_insights.urgency_indicator.level }}">
-                    <div class="timing-icon">⚡</div>
+                    <div class="timing-icon">URGENT</div>
                     <div class="timing-content">
                         <h4>Market urgency</h4>
                         <p class="timing-message">{{ analysis_data.timing_insights.urgency_indicator.message }}</p>
-                        <p class="timing-advice">◼ {{ analysis_data.timing_insights.urgency_indicator.advice }}</p>
+                        <p class="timing-advice">STRATEGY {{ analysis_data.timing_insights.urgency_indicator.advice }}</p>
                     </div>
                 </div>
                 
                 <!-- Platform timing -->
                 <div class="timing-card timing-normal">
-                    <div class="timing-icon">💻</div>
+                    <div class="timing-icon">DIGITAL</div>
                     <div class="timing-content">
                         <h4>Platform timing</h4>
                         <div class="platform-timing-list">
@@ -952,7 +1076,7 @@
                 
                 <!-- Next Best Time -->
                 <div class="timing-summary">
-                    <h4>🗓️ Next best time to list</h4>
+                    <h4>SCHEDULE Next best time to list</h4>
                     <p class="next-best-time">{{ analysis_data.timing_insights.next_best_time }}</p>
                 </div>
             </div>
@@ -967,28 +1091,28 @@
                 {% if analysis_data.analysis_json %}
                     {% set item = analysis_data.analysis_json %}
                     <div class="detail-item">
-                        <div class="detail-icon">◼</div>
+                        <div class="detail-icon">STRATEGY</div>
                         <div class="detail-content">
                             <div class="detail-label">Item</div>
                             <div class="detail-value">{{ item.description|title }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">◉</div>
+                        <div class="detail-icon">OPTIMAL</div>
                         <div class="detail-content">
                             <div class="detail-label">Brand</div>
                             <div class="detail-value">{{ item.brand }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">💻</div>
+                        <div class="detail-icon">DIGITAL</div>
                         <div class="detail-content">
                             <div class="detail-label">Model</div>
                             <div class="detail-value">{{ item.model }}</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon">✓</div>
+                        <div class="detail-icon">VERIFIED</div>
                         <div class="detail-content">
                             <div class="detail-label">Condition</div>
                             <div class="detail-value">{{ item.condition|title }}</div>
@@ -1031,7 +1155,7 @@
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(listingText).then(() => {
-                    btn.textContent = '✓ Copied!';
+                    btn.textContent = 'VERIFIED Copied!';
                     btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
                     btn.classList.add('success');
                     setTimeout(() => {
@@ -1066,7 +1190,7 @@
             
             try {
                 document.execCommand('copy');
-                btn.textContent = '✓ Copied!';
+                btn.textContent = 'VERIFIED Copied!';
                 btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
                 btn.classList.add('success');
                 setTimeout(() => {
