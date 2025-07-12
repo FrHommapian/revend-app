@@ -76,26 +76,26 @@ def _get_optimal_timing(timing_data, current_day, current_hour, now):
         next_day = _get_next_best_day(best_days, current_day)
         return {
             'status': 'wait',
-            'message': f'◐ Too late tonight - wait until {next_day}',
+            'message': f'EVENING Too late tonight - wait until {next_day}',
             'action': f'Best results on {next_day} between {best_hours}'
         }
     elif current_day in best_days and _is_peak_hour(current_hour, best_hours):
         return {
             'status': 'optimal',
-            'message': f'● Perfect time! {current_day} {best_hours} is peak selling time',
+            'message': f'PRIME Perfect time! {current_day} {best_hours} is peak selling time',
             'action': 'List now for maximum visibility'
         }
     elif current_day in best_days:
         return {
             'status': 'good',
-            'message': f'✓ Good day! Peak hours are {best_hours}',
+            'message': f'VERIFIED Good day! Peak hours are {best_hours}',
             'action': f'List this evening between {best_hours}'
         }
     else:
         next_best = _get_next_best_day(best_days, current_day)
         return {
             'status': 'wait',
-            'message': f'⏱️ Consider waiting until {next_best} for better visibility',
+            'message': f'TIMING Consider waiting until {next_best} for better visibility',
             'action': f'Best results on {", ".join(best_days[:2])}'
         }
 
@@ -106,7 +106,7 @@ def _get_seasonal_analysis(timing_data, current_month, current_month_num):
     if current_month_num in peak_months:
         return {
             'status': 'peak',
-            'message': f'📈 Peak season! {current_month} demand is higher',
+            'message': f'GROWTH Peak season! {current_month} demand is higher',
             'tip': 'Great time to sell - buyers are actively searching'
         }
     else:
@@ -124,7 +124,7 @@ def _get_seasonal_analysis(timing_data, current_month, current_month_num):
         
         return {
             'status': 'normal',
-            'message': f'🗓️ Standard season - steady demand',
+            'message': f'SCHEDULE Standard season - steady demand',
             'tip': f'Peak demand returns in {month_names[next_peak]}'
         }
 
@@ -133,23 +133,23 @@ def _get_urgency_indicator(timing_data, current_month_num):
     if current_month_num in timing_data['peak_months']:
         return {
             'level': 'high',
-            'message': '⚠️ High demand period',
+            'message': 'ALERT High demand period',
             'advice': 'List soon to capitalize on peak season'
         }
     else:
         return {
             'level': 'normal',
-            'message': '📈 Normal demand',
+            'message': 'GROWTH Normal demand',
             'advice': 'Time your listing for optimal results'
         }
 
 def _get_platform_timing():
     """Platform-specific timing recommendations"""
     return {
-        'facebook': '💻 Facebook Marketplace: Sunday evenings (7-9 PM)',
-        'gumtree': '⌂ Gumtree: Weekend afternoons (2-6 PM)',
-        'ebay': '⚈ eBay: Tuesday-Thursday (7-9 PM)',
-        'general': '◉ General: Weekend evenings (6-8 PM)'
+        'facebook': 'DIGITAL Facebook Marketplace: Sunday evenings (7-9 PM)',
+        'gumtree': 'LOCAL Gumtree: Weekend afternoons (2-6 PM)',
+        'ebay': 'MARKET eBay: Tuesday-Thursday (7-9 PM)',
+        'general': 'OPTIMAL General: Weekend evenings (6-8 PM)'
     }
 
 def _get_next_best_time(timing_data, now):
@@ -195,21 +195,21 @@ def _get_default_insights():
     return {
         'optimal_timing': {
             'status': 'normal',
-            'message': '🗓️ Weekend evenings are typically best for listings',
+            'message': 'SCHEDULE Weekend evenings are typically best for listings',
             'action': 'Consider listing on Saturday or Sunday evening'
         },
         'seasonal_analysis': {
             'status': 'normal',
-            'message': '📈 Standard selling season',
+            'message': 'GROWTH Standard selling season',
             'tip': 'Monitor trends for optimal timing'
         },
         'urgency_indicator': {
             'level': 'normal',
-            'message': '📈 Normal demand',
+            'message': 'GROWTH Normal demand',
             'advice': 'Time your listing for maximum visibility'
         },
         'platform_recommendations': {
-            'general': '◉ Weekend evenings work well for most platforms'
+            'general': 'OPTIMAL Weekend evenings work well for most platforms'
         },
         'next_best_time': 'Weekend evening'
     }
