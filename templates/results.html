@@ -867,21 +867,37 @@
         
         
         function showPlatform(platformKey) {
+            console.log('🔥 showPlatform called with:', platformKey);
+            
             // Hide all platform content
-            document.querySelectorAll('.platform-content').forEach(content => {
+            const allContent = document.querySelectorAll('.platform-content');
+            console.log('📦 Found platform content elements:', allContent.length);
+            allContent.forEach(content => {
                 content.classList.add('hidden');
+                console.log('🔒 Hidden:', content.id);
             });
             
             // Remove active class from all tabs
-            document.querySelectorAll('.platform-tab').forEach(tab => {
+            const allTabs = document.querySelectorAll('.platform-tab');
+            allTabs.forEach(tab => {
                 tab.classList.remove('active');
             });
             
             // Show selected platform content
-            document.getElementById('content-' + platformKey).classList.remove('hidden');
+            const targetContent = document.getElementById('content-' + platformKey);
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+                console.log('🔓 Showing:', targetContent.id);
+            } else {
+                console.error('❌ Target content not found:', 'content-' + platformKey);
+            }
             
             // Add active class to selected tab
-            document.getElementById('tab-' + platformKey).classList.add('active');
+            const targetTab = document.getElementById('tab-' + platformKey);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                console.log('✅ Activated tab:', targetTab.id);
+            }
         }
         
         function copyListing(platformKey) {
