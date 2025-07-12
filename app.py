@@ -338,60 +338,33 @@ def generate_category_listing(analysis_data):
         
         analysis_text = analysis_data.get('analysis', '')
         
-        logger.info(f"📝 GENERATING MULTI-PLATFORM LISTINGS FOR: {specific_item}")
+        logger.info(f"📝 GENERATING SINGLE LISTING FOR: {specific_item}")
         
         client = get_openai_client()
         
-        platforms = {
-            'general': {
-                'name': 'General',
-                'prompt': f"""Create an Australian marketplace listing for this {brand} {model} {specific_item} in {condition} condition for . Write 150-250 words as an Australian seller with personal story. No emojis."""
-            },
-            'ebay': {
-                'name': 'eBay',
-                'prompt': f"""Create professional eBay listing for {brand} {model} {specific_item} - {condition} condition. Include specifications, shipping info. 180-220 words. End with 'Buy with confidence!'"""
-            },
-            'facebook': {
-                'name': 'Facebook Marketplace',
-                'prompt': f"""Create casual Facebook Marketplace listing for {brand} {model} {specific_item}. Local pickup focus, personal touch. 120-160 words. Start with 'Selling my...' End with 'Message me if interested!'"""
-            },
-            'gumtree': {
-                'name': 'Gumtree',
-                'prompt': f"""Create straightforward Gumtree listing for {brand} {model} {specific_item} for sale. Price . Pickup/delivery options. 140-180 words. End with 'Serious buyers only'."""
-            },
-            'mercari': {
-                'name': 'Mercari',
-                'prompt': f"""Create mobile-friendly Mercari listing for {brand} {model} {specific_item}. Condition: {condition}. Quick sale focus. 100-140 words. End with 'Fast shipping!'"""
-            }
-        }
+        # Generate single general listing
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{
+                "role": "user",
+                "content": f"""Create an Australian marketplace listing for this {brand} {model} {specific_item} in {condition} condition for ${market_value}. 
+
+Write 150-250 words as an Australian seller with personal story about why you're selling. Include care details and condition. No emojis. Sound authentic and trustworthy.
+
+Make sure the listing is about the {specific_item}, not anything else."""
+            }],
+            max_tokens=400,
+            temperature=0.3
+        )
         
-        listings = {}
+        generated_listing = response.choices[0].message.content
         
-        for platform_key, platform_info in platforms.items():
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": platform_info['prompt']}],
-                    max_tokens=400,
-                    temperature=0.3
-                )
-                
-                generated_listing = response.choices[0].message.content
-                listings[platform_key] = {
-                    'name': platform_info['name'],
-                    'content': generated_listing
-                }
-                
-                logger.info(f"✅ Generated {platform_info['name']} listing")
-                
-            except Exception as e:
-                logger.error(f"Error generating {platform_info['name']} listing: {e}")
-                listings[platform_key] = {
-                    'name': platform_info['name'],
-                    'content': f"I'm selling my {brand} {model} {specific_item} in {condition} condition for . Please contact me for more details."
-                }
+        logger.info(f"✅ Generated single listing")
+        return generated_listing
         
-        return listings.get('general', {}).get('content', f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details.")
+    except Exception as e:
+        logger.error(f"Error generating listing: {e}")
+        return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
         
     except Exception as e:
         logger.error(f"Error generating listings: {e}")
