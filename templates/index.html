@@ -6,675 +6,210 @@
     <title>Revend - Instant Listings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
             min-height: 100vh;
-            font-size: 16px;
-            line-height: 1.5;
-            overflow-x: hidden;
+            padding: 20px 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+        .container-fluid {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
         }
         
-        .shape {
-            position: absolute;
-            background: rgba(220, 53, 69, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .shape:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-        
-        .shape:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 60%;
-            right: 15%;
-            animation-delay: -2s;
-        }
-        
-        .shape:nth-child(3) {
-            width: 40px;
-            height: 40px;
-            bottom: 30%;
-            left: 20%;
-            animation-delay: -4s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        .hero-section {
-            padding: 100px 0 70px;
-            text-align: center;
-            color: white;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .hero-title {
-            font-size: 4rem;
-            font-weight: 900;
-            margin-bottom: 20px;
-            letter-spacing: -0.03em;
-            text-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            animation: fadeInUp 1s ease-out;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 60px;
-            opacity: 0.9;
-            font-weight: 300;
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-        
-        .upload-section {
+        .upload-card {
             background: rgba(255,255,255,0.95);
-            border-radius: 32px;
-            padding: 50px;
-            margin: 0 auto 80px;
-            max-width: 600px;
-            box-shadow: 0 32px 80px rgba(0,0,0,0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.3);
-            position: relative;
-            z-index: 2;
-            animation: fadeInUp 1s ease-out 0.6s both;
-        }
-        
-        .upload-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
-            border-radius: 32px 32px 0 0;
-        }
-        
-        .upload-area {
-            border: 3px dashed #dee2e6;
-            border-radius: 24px;
-            padding: 60px 40px;
+            border-radius: 28px;
+            padding: 40px;
             text-align: center;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255,255,255,0.2);
+            margin: 0 auto;
             position: relative;
             overflow: hidden;
         }
         
-        .upload-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(220,53,69,0.1), transparent);
-            transition: left 0.6s ease;
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #dc3545;
+            margin-bottom: 20px;
+            letter-spacing: -0.03em;
+            text-align: center;
         }
         
-        .upload-area:hover {
-            border-color: #dc3545;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(220,53,69,0.2);
-        }
-        
-        .upload-area:hover::before {
-            left: 100%;
+        .upload-section {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: center;
         }
         
         .upload-icon {
-            font-size: 3.5rem;
-            margin-bottom: 28px;
-            color: #dc3545;
-            transition: transform 0.4s ease;
-        }
-        
-        .upload-area:hover .upload-icon {
-            transform: scale(1.15) rotate(10deg);
+            font-size: 3rem;
+            margin-bottom: 16px;
+            display: block;
         }
         
         .upload-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #212529;
-            margin-bottom: 16px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
         
-        .upload-description {
-            font-size: 1.1rem;
-            color: #6c757d;
-            margin-bottom: 32px;
+        .upload-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 16px;
         }
         
         .file-input {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 100%;
             opacity: 0;
+            width: 100%;
+            height: 100%;
             cursor: pointer;
         }
         
-        .file-input-label {
-            display: inline-block;
-            padding: 16px 32px;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        .file-input-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
             color: white;
-            border-radius: 20px;
+            padding: 16px 32px;
+            border-radius: 25px;
             font-weight: 700;
             font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .file-input-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        .submit-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             border: none;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(220,53,69,0.3);
-        }
-        
-        .file-input-label::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .file-input-label:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(220,53,69,0.4);
-        }
-        
-        .file-input-label:hover::before {
-            left: 100%;
-        }
-        
-        .analyze-btn {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            border-radius: 24px;
-            padding: 20px 48px;
-            font-weight: 800;
-            font-size: 1.2rem;
             color: white;
-            width: 0%;
-            margin-top: -20px;
+            padding: 16px 32px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(220,53,69,0.3);
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(40,167,69,0.3);
         }
         
-        .analyze-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .submit-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(40,167,69,0.4);
         }
         
-        .analyze-btn:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-            transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(220,53,69,0.4);
-        }
-        
-        .analyze-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .analyze-btn:disabled {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        .submit-button:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-            box-shadow: 0 8px 24px rgba(108,117,125,0.3);
-        }
-        
-        .features-section {
-            padding: 80px 0 100px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .feature-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 24px;
-            padding: 40px 32px;
-            text-align: center;
-            transition: all 0.4s ease;
-            border: 2px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.8s ease-out both;
-        }
-        
-        .feature-card:nth-child(1) { animation-delay: 0.9s; }
-        .feature-card:nth-child(2) { animation-delay: 1.2s; }
-        .feature-card:nth-child(3) { animation-delay: 1.5s; }
-        
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(220,53,69,0.05) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-12px);
-            border-color: #dc3545;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
-        }
-        
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-        
-        .feature-icon {
-            font-size: 2.8rem;
-            margin-bottom: 24px;
-            color: #dc3545;
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover .feature-icon {
-            transform: scale(1.2);
-        }
-        
-        .feature-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #212529;
-            margin-bottom: 16px;
-        }
-        
-        .feature-description {
-            font-size: 1rem;
-            color: #6c757d;
-            line-height: 1.6;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,249,250,0.98) 100%);
-            display: none;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            backdrop-filter: blur(20px);
-        }
-        
-        .loading-container {
-            text-align: center;
-            max-width: 480px;
-            padding: 50px;
-            background: rgba(255,255,255,0.95);
-            border-radius: 32px;
-            box-shadow: 0 32px 80px rgba(0,0,0,0.15);
-            border: 2px solid rgba(220,53,69,0.1);
-            backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .loading-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
-            border-radius: 32px 32px 0 0;
-        }
-        
-        .loading-logo {
-            font-size: 3.2rem;
-            font-weight: 900;
-            color: #dc3545;
-            margin-bottom: 28px;
-            letter-spacing: -0.03em;
-            text-shadow: 0 8px 32px rgba(220,53,69,0.2);
-        }
-        
-        .loading-text {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 12px;
-        }
-        
-        .loading-subtitle {
-            font-size: 1.1rem;
-            color: #6c757d;
-            margin-bottom: 40px;
-        }
-        
-        .progress-container {
-            width: 0%;
-            margin-bottom: 28px;
-        }
-        
-        .progress-track {
-            background: #f8f9fa;
-            border-radius: 20px;
-            height: 16px;
-            overflow: hidden;
-            border: 2px solid #e9ecef;
-            position: relative;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
-            height: 100%;
-            width: 0%;
-            transition: width 0.8s ease;
-            border-radius: 20px;
-            position: relative;
-        }
-        
-        .progress-fill::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-            animation: shimmer 2s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        
-        .progress-text {
-            font-size: 1rem;
-            color: #6c757d;
-            margin-top: -20px;
-            font-weight: 600;
-            text-align: center;
-        }
-        
-        .selected-file {
-            border-color: #dc3545 !important;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         @media (max-width: 768px) {
-            .hero-title { font-size: 3rem; }
-            .hero-subtitle { font-size: 1.3rem; }
-            .upload-section { margin: 0 20px 60px; padding: 40px; }
-            .upload-area { padding: 50px 30px; }
-            .feature-grid { grid-template-columns: 1fr; gap: 30px; padding: 0 20px; }
-        }
-    
-        body {
-            margin: 0;
-            padding: 0;
-            background: #6b7280;
-        }
-        .loading-progress {
-            width: 0%;
-            height: 8px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        .loading-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #dc3545, #c82333);
-            width: 0%;
-            border-radius: 4px;
-            transition: width 0.8s ease-in-out;
-            animation: progressPulse 2s infinite;
-        }
-        
-        @keyframes progressPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            .container-fluid {
+                padding: 0 16px;
+                max-width: 100%;
+            }
+            
+            .upload-card {
+                padding: 30px 20px;
+                margin: 20px 0;
+            }
+            
+            .logo {
+                font-size: 2.8rem;
+            }
         }
 </style>
 </head>
-<body>
-    <div class="floating-shapes">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
-
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-container">
-            <div class="loading-logo">Revend</div>
-            <div class="loading-text">Analyzing your item</div>
-            <div class="loading-subtitle">This usually takes 30-60 seconds</div>
-            <div class="loading-progress"><div class="loading-progress-bar"></div></div>
-                </div>
-                <div class="loading-progress"><div class="loading-progress-bar"></div></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="hero-section">
-        <div class="container">
-            <h1 class="hero-title">Revend</h1>
-            <p class="hero-subtitle">Snap. Price. Sell.</p>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="upload-section">
-            <form action="/analyze" method="post" enctype="multipart/form-data" id="analysisForm">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📸</div>
-                    <h3 class="upload-title">Upload your photo</h3>
-                    <p class="upload-description">Any item works • Get instant pricing</p>
-                    <input type="file" class="file-input" name="photo" accept="image/*" required id="photoInput">
-                    <label for="photoInput" class="file-input-label">Choose photo</label>
-                    <div id="selectedFile" style="display: none; margin-top: -20px; font-size: 1rem; color: #dc3545; font-weight: 700;">
-                        <span id="fileName"></span> selected
+<body><div class="container-fluid">
+        <div class="upload-card">
+            <div class="logo">Revend</div>
+            
+            <div class="upload-section">
+                <div class="upload-icon">📷</div>
+                <div class="upload-title">Upload your photo</div>
+                <div class="upload-subtitle">Any item works • Get instant pricing</div>
+                
+                <form action="/analyze" method="post" enctype="multipart/form-data" id="uploadForm">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="photo" accept="image/*" capture="environment" class="file-input" id="photoInput" required>
+                        <label for="photoInput" class="file-input-button" id="fileLabel">
+                            Choose photo
+                        </label>
                     </div>
-                </div>
-                <button type="submit" class="analyze-btn" id="analyzeBtn" disabled>Get my listing</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="features-section">
-        <div class="container">
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h4 class="feature-title">Instant results</h4>
-                    <p class="feature-description">Real market pricing in seconds</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h4 class="feature-title">Smart recognition</h4>
-                    <p class="feature-description">AI identifies brand, model & condition</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">✍️</div>
-                    <h4 class="feature-title">Perfect listings</h4>
-                    <p class="feature-description">Copy-paste ready for any marketplace</p>
-                </div>
+                    
+                    <button type="submit" class="submit-button" id="submitBtn" disabled>
+                        Get my listing
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photoInput = document.getElementById('photoInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
     
-    <script>
-        const photoInput = document.getElementById('photoInput');
-        const uploadArea = document.getElementById('uploadArea');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const selectedFile = document.getElementById('selectedFile');
-        const fileName = document.getElementById('fileName');
-        
+    if (photoInput && fileLabel && submitBtn) {
         photoInput.addEventListener('change', function(e) {
-            if (e.target.files[0]) {
-                const file = e.target.files[0];
-                fileName.textContent = file.name;
-                selectedFile.style.display = 'block';
-                uploadArea.classList.add('selected-file');
-                analyzeBtn.disabled = false;
+            if (e.target.files.length > 0) {
+                fileLabel.textContent = 'Photo selected ✓';
+                fileLabel.style.background = 'rgba(40,167,69,0.3)';
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            } else {
+                fileLabel.textContent = 'Choose photo';
+                fileLabel.style.background = 'rgba(255,255,255,0.2)';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.6';
             }
         });
         
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#dc3545';
-        });
-        
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#dee2e6';
-        });
-        
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                photoInput.files = files;
-                const file = files[0];
-                fileName.textContent = file.name;
-                selectedFile.style.display = 'block';
-                uploadArea.classList.add('selected-file');
-                analyzeBtn.disabled = false;
-            }
-        });
-        
-        document.getElementById('analysisForm').addEventListener('submit', function(e) {
-            const fileInput = document.querySelector('input[type="file"]');
-            if (!fileInput.files[0]) {
-                alert('Please select a photo first');
+        uploadForm.addEventListener('submit', function(e) {
+            if (!photoInput.files.length) {
                 e.preventDefault();
+                alert('Please select a photo first');
                 return;
             }
             
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            
-            const steps = [
-                { text: "Reading your photo...", progress: 15 },
-                { text: "Identifying the item...", progress: 35 },
-                { text: "Finding market prices...", progress: 60 },
-                { text: "Writing your listing...", progress: 85 },
-                { text: "Almost done...", progress: 100 }
-            ];
-            
-            let currentStep = 0;
-            const stepInterval = setInterval(() => {
-                if (currentStep < steps.length) {
-                    const step = steps[currentStep];
-                    document.getElementById('progressText').textContent = step.text;
-                    document.getElementById('progressFill').style.width = step.progress + '%';
-                    currentStep++;
-                } else {
-                    clearInterval(stepInterval);
-                }
-            }, 2800);
+            submitBtn.textContent = 'Analyzing...';
+            submitBtn.disabled = true;
         });
-    
-        // Animated loading bar
-        </script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const progressBar = document.querySelector('.loading-progress-bar');
-    if (!progressBar) return;
-    
-    let progress = 0;
-    
-    function updateProgress() {
-        if (progress < 20) {
-            progress += Math.random() * 3 + 1; // 1-4% increments
-        } else if (progress < 50) {
-            progress += Math.random() * 2 + 0.5; // 0.5-2.5% increments
-        } else if (progress < 80) {
-            progress += Math.random() * 1.5 + 0.3; // 0.3-1.8% increments
-        } else if (progress < 95) {
-            progress += Math.random() * 0.8 + 0.1; // 0.1-0.9% increments
-        }
-        
-        if (progress > 95) progress = 95; // Cap at 95%
-        
-        progressBar.style.width = progress + '%';
-        
-        if (progress < 95) {
-            setTimeout(updateProgress, 600 + Math.random() * 400); // 600-1000ms intervals
-        }
     }
-    
-    // Start the animation
-    updateProgress();
 });
 </script></body>
 </html>
