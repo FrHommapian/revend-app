@@ -179,14 +179,16 @@
             <div class="subtitle">Any item works • Get instant pricing</div>
             
             <div class="photo-options">
-                <input type="file" id="fileInput" class="file-input" accept="image/*">
-                
-                <div class="photo-buttons">
-                    <button class="btn btn-primary" onclick="takePhoto()">📸 Take Photo</button>
-                    <button class="btn btn-primary" onclick="uploadPhoto()">📂 Upload Photo</button>
-                </div>
-                
-                <button class="btn btn-secondary" onclick="processImage()">Get my listing</button>
+                <form id="photoForm" method="POST" action="/analyze" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="photo" class="file-input" accept="image/*">
+                    
+                    <div class="photo-buttons">
+                        <button type="button" class="btn btn-primary" onclick="takePhoto()">📸 Take Photo</button>
+                        <button type="button" class="btn btn-primary" onclick="uploadPhoto()">📂 Upload Photo</button>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-secondary">Get my listing</button>
+                </form>
             </div>
             
             <div class="preview-container hidden" id="previewContainer">
@@ -196,8 +198,8 @@
             <div class="camera-container hidden" id="cameraContainer">
                 <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
                 <div class="camera-controls">
-                    <button class="btn btn-primary" onclick="capturePhoto()">Capture</button>
-                    <button class="btn btn-primary" onclick="closeCameraView()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="capturePhoto()">Capture</button>
+                    <button type="button" class="btn btn-primary" onclick="closeCameraView()">Cancel</button>
                 </div>
             </div>
             
@@ -249,9 +251,15 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0);
             
-            // Convert to blob
+            // Convert to blob and create file
             canvas.toBlob((blob) => {
                 const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                
+                // Create a new FileList with the captured image
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('fileInput').files = dt.files;
+                
                 handleImageFile(file);
                 closeCameraView();
             }, 'image/jpeg', 0.8);
@@ -293,61 +301,24 @@
                 previewImg.src = e.target.result;
                 document.getElementById('previewContainer').classList.remove('hidden');
                 
-                // Store image data for processing
-                currentImageData = {
-                    file: file,
-                    dataUrl: e.target.result
-                };
-                
                 showMessage('Image loaded successfully! Click "Get my listing" to continue.', 'success');
             };
             reader.readAsDataURL(file);
         }
 
-        async function processImage() {
-            if (!currentImageData) {
+        // Handle form submission
+        document.getElementById('photoForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
                 showMessage('Please take a photo or upload an image first.', 'error');
                 return;
             }
-
-            showMessage('Processing your image...', 'success');
             
-            try {
-                const formData = new FormData();
-                formData.append('image', currentImageData.file);
-                
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    // Handle successful upload
-                    showMessage('Image processed successfully!', 'success');
-                    
-                    // Redirect to results page or show results
-                    if (result.redirect) {
-                        window.location.href = result.redirect;
-                    } else if (result.listing) {
-                        displayListing(result.listing);
-                    }
-                } else {
-                    const error = await response.json();
-                    showMessage(error.message || 'Error processing image. Please try again.', 'error');
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                showMessage('Network error. Please check your connection and try again.', 'error');
-            }
-        }
-
-        function displayListing(listing) {
-            // This function would display the listing results
-            // You can customize this based on your backend response
-            console.log('Listing results:', listing);
-            showMessage('Listing generated successfully!', 'success');
-        }
+            showMessage('Processing your image...', 'success');
+            // Form will submit normally to /analyze endpoint
+        });
 
         function showMessage(message, type) {
             // Hide all messages first
