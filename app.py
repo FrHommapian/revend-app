@@ -22,24 +22,20 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    """Fixed OpenAI client with proper error handling"""
+    """Fixed OpenAI client initialization"""
     try:
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
             logger.error("❌ OPENAI_API_KEY not found in environment")
             return None
-            
+        
+        logger.info(f"🔑 API Key found: {api_key[:12]}...")
+        
+        # Fixed client initialization without proxies parameter
         client = OpenAI(
             api_key=api_key,
             timeout=30.0,
-            max_retries=3
-        )
-        
-        # Test the client
-        test_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": "Test"}],
-            max_tokens=5
+            max_retries=2
         )
         
         logger.info("✅ OpenAI client initialized successfully")
@@ -95,29 +91,22 @@ MARKETPLACE_CATEGORIES = {
 }
 
 def bulletproof_category_detection(ai_category, specific_item, brand, model, analysis_notes):
-    """Enhanced category detection with better brand recognition"""
     all_text = f"{specific_item} {brand} {model} {analysis_notes}".lower()
     brand_lower = brand.lower().strip()
     
     logger.info(f"🔍 BULLETPROOF CATEGORIZATION")
     logger.info(f"   Brand: '{brand}' | Item: '{specific_item}'")
     
-    # Enhanced brand lists with more luxury brands
     electronics_brands = [
-        'apple', 'samsung', 'google', 'huawei', 'xiaomi', 'dell', 'hp', 'lenovo', 
-        'asus', 'sony', 'bose', 'beats', 'canon', 'nikon', 'nintendo', 'playstation', 'xbox'
+        'apple', 'samsung', 'google', 'huawei', 'xiaomi', 'dell', 'hp', 'lenovo', 'asus', 'sony', 'bose', 'beats', 'canon', 'nikon', 'nintendo', 'playstation', 'xbox'
     ]
     
     fashion_brands = [
-        'chanel', 'dior', 'gucci', 'prada', 'louis vuitton', 'lv', 'hermes', 'versace', 
-        'armani', 'tom ford', 'le labo', 'creed', 'coach', 'kate spade', 'michael kors',
-        'yves saint laurent', 'ysl', 'burberry', 'bottega veneta', 'balenciaga', 'fendi',
-        'zara', 'h&m', 'nike', 'adidas', 'rolex', 'omega', 'cartier', 'tiffany'
+        'chanel', 'dior', 'gucci', 'prada', 'louis vuitton', 'hermes', 'versace', 'armani', 'tom ford', 'le labo', 'creed', 'coach', 'kate spade', 'michael kors', 'zara', 'h&m', 'nike', 'adidas', 'rolex', 'omega'
     ]
     
     vehicle_brands = [
-        'ford', 'toyota', 'honda', 'bmw', 'mercedes', 'audi', 'volkswagen', 'nissan', 
-        'mazda', 'tesla', 'holden', 'ferrari', 'lamborghini', 'porsche'
+        'ford', 'toyota', 'honda', 'bmw', 'mercedes', 'audi', 'volkswagen', 'nissan', 'mazda', 'tesla', 'holden'
     ]
     
     home_brands = [
@@ -128,7 +117,6 @@ def bulletproof_category_detection(ai_category, specific_item, brand, model, ana
         'fisher-price', 'little tikes', 'lego', 'graco', 'chicco', 'britax', 'uppababy'
     ]
     
-    # Check brand matches
     if any(brand_lower == electronics_brand or electronics_brand in brand_lower for electronics_brand in electronics_brands):
         logger.info(f"📱 ELECTRONICS BRAND: {brand} → electronics")
         return 'electronics'
@@ -151,7 +139,6 @@ def bulletproof_category_detection(ai_category, specific_item, brand, model, ana
         logger.info(f"👶 BABY BRAND: {brand} → baby_kids")
         return 'baby_kids'
     
-    # Check item keywords
     if any(keyword in all_text for keyword in ['phone', 'laptop', 'computer', 'tablet', 'camera', 'headphones', 'speaker', 'console', 'hard drive', 'ssd']):
         logger.info(f"📱 ELECTRONICS ITEM: {specific_item} → electronics")
         return 'electronics'
@@ -164,15 +151,12 @@ def bulletproof_category_detection(ai_category, specific_item, brand, model, ana
     return ai_category
 
 def extract_price_from_ai_estimate(estimated_value):
-    """Extract price from OpenAI's visual estimate"""
     try:
         if not estimated_value:
             return None
         
-        # Multiple patterns to catch different price formats
         patterns = [
-            r'(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:AUD|USD|\$|dollars?)',
-            r'\$(\d+(?:,\d{3})*(?:\.\d{2})?)',
+            r'(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:AUD|USD|\$)',
             r'(\d+(?:,\d{3})*(?:\.\d{2})?)'
         ]
         
@@ -181,7 +165,7 @@ def extract_price_from_ai_estimate(estimated_value):
             for match in matches:
                 try:
                     price = float(match.replace(',', ''))
-                    if 10 <= price <= 500000:  # Reasonable price range
+                    if 10 <= price <= 500000:
                         return price
                 except:
                     continue
@@ -189,13 +173,11 @@ def extract_price_from_ai_estimate(estimated_value):
     except:
         return None
 
-def create_hybrid_pricing_system(ai_estimated_value, brand, model, condition, category, specific_item):
-    """NEW: Hybrid pricing system with multiple fallbacks"""
-    
-    # TIER 1: OpenAI Visual Analysis (Primary)
+def create_ai_priority_pricing(ai_estimated_value, brand, model, condition, fallback_pricing):
     ai_price = extract_price_from_ai_estimate(ai_estimated_value)
+    
     if ai_price and ai_price > 0:
-        logger.info(f"🎯 TIER 1 - AI VISUAL ESTIMATE: ${ai_price}")
+        logger.info(f"🎯 USING AI ESTIMATE: ${ai_price}")
         
         return {
             'pricing_analysis': {
@@ -208,46 +190,19 @@ def create_hybrid_pricing_system(ai_estimated_value, brand, model, condition, ca
                 'confidence': 'high',
                 'pricing_source': 'ai_visual_estimate'
             },
-            'sources': [{'source': f'AI Visual Analysis ({brand} {model})', 'confidence': 'high'}],
-            'tier_used': 'ai_visual'
+            'sources': [{'source': f'AI Analysis ({brand} {model})', 'confidence': 'high'}],
+            'ai_estimate_used': True
         }
-    
-    # TIER 2: Universal Brand Engine (Secondary)
-    logger.info(f"🔄 TIER 2 - UNIVERSAL BRAND ENGINE")
-    brand_pricing = pricing_engine.get_brand_pricing(brand, specific_item, condition, category)
-    
-    if brand_pricing and brand_pricing.get('pricing_analysis', {}).get('market_value', 0) > 100:
-        logger.info(f"🎯 TIER 2 - BRAND ENGINE: ${brand_pricing['pricing_analysis']['market_value']}")
-        brand_pricing['tier_used'] = 'brand_engine'
-        return brand_pricing
-    
-    # TIER 3: Enhanced Database (Tertiary)
-    logger.info(f"🔄 TIER 3 - ENHANCED DATABASE")
-    database_pricing = pricing_engine.get_database_pricing(brand, specific_item, condition, category)
-    
-    if database_pricing and database_pricing.get('pricing_analysis', {}).get('market_value', 0) > 50:
-        logger.info(f"🎯 TIER 3 - DATABASE: ${database_pricing['pricing_analysis']['market_value']}")
-        database_pricing['tier_used'] = 'enhanced_database'
-        return database_pricing
-    
-    # TIER 4: Basic Fallback (Last resort)
-    logger.warning(f"⚠️ TIER 4 - BASIC FALLBACK")
-    fallback_pricing = pricing_engine.analyze_comprehensive_pricing({
-        'brand': brand, 'model': model, 'category': category,
-        'description': specific_item, 'condition': condition
-    })
-    
-    fallback_pricing['tier_used'] = 'basic_fallback'
-    return fallback_pricing
+    else:
+        logger.warning(f"⚠️ USING FALLBACK PRICING")
+        return fallback_pricing
 
 def clean_json_response(response_text):
-    """Clean JSON response from OpenAI"""
     cleaned = re.sub(r'```json\s*', '', response_text)
     cleaned = re.sub(r'```\s*', '', cleaned)
     return cleaned.strip()
 
 def analyze_item_photo(image_file):
-    """Enhanced photo analysis with fixed OpenAI integration"""
     try:
         session_id = f"{int(time.time())}-{os.urandom(4).hex()}"
         
@@ -258,141 +213,145 @@ def analyze_item_photo(image_file):
         
         logger.info(f"=== NEW ANALYSIS SESSION {session_id} ===")
         
-        # Process image
         image = Image.open(image_file)
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
         
-        # Try OpenAI client
         client = get_openai_client()
+        
         if not client:
             logger.error("❌ OpenAI client unavailable - using fallback pricing")
-            return get_fallback_analysis(image_hash, session_id)
+            logger.warning("⚠️ Using fallback analysis")
+            
+            # Fallback analysis without OpenAI
+            item_info = {
+                'brand': 'Unknown',
+                'model': 'Unknown',
+                'category': 'electronics',
+                'description': 'item',
+                'condition': 'good',
+                'session_id': session_id,
+                'image_hash': image_hash
+            }
+            
+            fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
+            
+            category_info = MARKETPLACE_CATEGORIES.get('electronics', MARKETPLACE_CATEGORIES['electronics'])
+            
+            return {
+                'category': 'electronics',
+                'category_info': category_info,
+                'analysis': 'OpenAI unavailable - using fallback pricing',
+                'analysis_json': item_info,
+                'pricing_data': fallback_pricing_data,
+                'image_hash': image_hash,
+                'session_id': session_id,
+                'specific_item': 'item',
+                'ai_suggested_category': 'electronics',
+                'corrected_category': 'electronics',
+                'ai_estimated_value': 'Unknown'
+            }
         
-        # Category detection
-        try:
-            category_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"""Analyze this image. Focus on the main item.
+        timestamp = datetime.now().isoformat()
+        
+        # Category analysis
+        category_response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"""Analyze this image. Focus on the main item.
 
 Categories: electronics, vehicles, fashion_beauty, home_garden, baby_kids
 
 Return JSON: {{"primary_category": "category", "specific_item": "item", "confidence": 10}}"""
-                            },
-                            {
-                                "type": "image_url", 
-                                "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                            }
-                        ]
-                    }
-                ],
-                max_tokens=200,
-                temperature=0.1
-            )
-            
-            category_text = clean_json_response(category_response.choices[0].message.content)
-            
-            # FIXED: Proper JSON parsing with error handling
-            try:
-                category_data = json.loads(category_text)
-                ai_suggested_category = category_data.get('primary_category', 'electronics')
-                specific_item = category_data.get('specific_item', 'item')
-            except json.JSONDecodeError as e:
-                logger.error(f"❌ JSON parsing error: {e}")
-                ai_suggested_category = 'electronics'
-                specific_item = 'item'
-            
+                        },
+                        {
+                            "type": "image_url", 
+                            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                        }
+                    ]
+                }
+            ],
+            max_tokens=200,
+            temperature=0.1
+        )
+        
+        category_text = clean_json_response(category_response.choices[0].message.content)
+        
+        # Parse category response
+        try:
+            category_data = json.loads(category_text)
+            ai_suggested_category = category_data.get('primary_category', 'electronics')
+            specific_item = category_data.get('specific_item', 'item')
         except Exception as e:
-            logger.error(f"❌ Category detection failed: {e}")
+            logger.error(f"Category parsing error: {e}")
             ai_suggested_category = 'electronics'
             specific_item = 'item'
         
         # Detailed analysis
+        analysis_response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"""Analyze this {specific_item} for Australian pricing.
+
+Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "excellent/very_good/good/fair/poor", "estimated_value": "XXX AUD", "analysis_notes": "description"}}"""
+                        },
+                        {
+                            "type": "image_url", 
+                            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500,
+            temperature=0.1
+        )
+        
+        analysis_text = clean_json_response(analysis_response.choices[0].message.content)
+        
         try:
-            analysis_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"""Analyze this {specific_item} for Australian pricing.
-
-CRITICAL: Look at the image carefully and estimate the realistic market value for this specific item in Australia.
-
-Consider:
-- Brand reputation and luxury level
-- Item condition and quality
-- Current market demand
-- Comparable sales prices
-
-Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "excellent/very_good/good/fair/poor", "estimated_value": "XXX AUD", "analysis_notes": "detailed description"}}"""
-                            },
-                            {
-                                "type": "image_url", 
-                                "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                            }
-                        ]
-                    }
-                ],
-                max_tokens=500,
-                temperature=0.1
+            analysis_json = json.loads(analysis_text)
+            brand = analysis_json.get('brand', 'Unknown')
+            model = analysis_json.get('model', 'Unknown')
+            analysis_notes = analysis_json.get('analysis_notes', '')
+            ai_estimated_value = analysis_json.get('estimated_value', 'Unknown')
+            
+            corrected_category = bulletproof_category_detection(
+                ai_suggested_category, specific_item, brand, model, analysis_notes
             )
             
-            analysis_text = clean_json_response(analysis_response.choices[0].message.content)
+            logger.info(f"🎯 FINAL: {ai_suggested_category} → {corrected_category}")
             
-            try:
-                analysis_json = json.loads(analysis_text)
-                brand = analysis_json.get('brand', 'Unknown')
-                model = analysis_json.get('model', 'Unknown')
-                analysis_notes = analysis_json.get('analysis_notes', '')
-                ai_estimated_value = analysis_json.get('estimated_value', 'Unknown')
-                condition = analysis_json.get('condition', 'good')
-                
-            except json.JSONDecodeError as e:
-                logger.error(f"❌ Analysis JSON parsing error: {e}")
-                brand = 'Unknown'
-                model = 'Unknown'
-                analysis_notes = analysis_text
-                ai_estimated_value = 'Unknown'
-                condition = 'good'
+            item_info = {
+                'brand': brand,
+                'model': model,
+                'category': corrected_category,
+                'description': specific_item,
+                'condition': analysis_json.get('condition', 'good'),
+                'session_id': session_id,
+                'image_hash': image_hash
+            }
             
         except Exception as e:
-            logger.error(f"❌ Analysis failed: {e}")
-            brand = 'Unknown'
-            model = 'Unknown'
-            analysis_notes = 'Analysis failed'
+            logger.error(f"Parse error: {e}")
+            item_info = {
+                'brand': 'Unknown', 'model': 'Unknown', 'category': 'fashion_beauty',
+                'description': specific_item, 'condition': 'good', 'session_id': session_id, 'image_hash': image_hash
+            }
             ai_estimated_value = 'Unknown'
-            condition = 'good'
         
-        # Category correction
-        corrected_category = bulletproof_category_detection(
-            ai_suggested_category, specific_item, brand, model, analysis_notes
-        )
-        
-        # Create item info
-        item_info = {
-            'brand': brand,
-            'model': model,
-            'category': corrected_category,
-            'description': specific_item,
-            'condition': condition,
-            'session_id': session_id,
-            'image_hash': image_hash
-        }
-        
-        # NEW: Use hybrid pricing system
-        final_pricing_data = create_hybrid_pricing_system(
-            ai_estimated_value, brand, model, condition, corrected_category, specific_item
-        )
+        fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
+        final_pricing_data = create_ai_priority_pricing(ai_estimated_value, brand, model, item_info['condition'], fallback_pricing_data)
         
         category_info = MARKETPLACE_CATEGORIES.get(corrected_category, MARKETPLACE_CATEGORIES['electronics'])
         
@@ -411,37 +370,26 @@ Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "exc
         }
         
     except Exception as e:
-        logger.error(f"❌ Error analyzing photo: {e}")
-        return get_fallback_analysis(image_hash, session_id)
-
-def get_fallback_analysis(image_hash, session_id):
-    """Fallback analysis when OpenAI fails"""
-    logger.warning("⚠️ Using fallback analysis")
-    
-    item_info = {
-        'brand': 'Unknown', 'model': 'Unknown', 'category': 'electronics',
-        'description': 'item', 'condition': 'good', 'session_id': session_id, 'image_hash': image_hash
-    }
-    
-    fallback_pricing = pricing_engine.analyze_comprehensive_pricing(item_info)
-    
-    return {
-        'category': 'electronics',
-        'category_info': MARKETPLACE_CATEGORIES['electronics'],
-        'analysis': 'Fallback analysis used',
-        'analysis_json': item_info,
-        'pricing_data': fallback_pricing,
-        'image_hash': image_hash,
-        'session_id': session_id,
-        'specific_item': 'item',
-        'ai_suggested_category': 'electronics',
-        'corrected_category': 'electronics',
-        'ai_estimated_value': 'Unknown'
-    }
+        logger.error(f"Error analyzing photo: {e}")
+        return None
 
 def generate_category_listing(analysis_data):
-    """Generate marketplace listing"""
     try:
+        client = get_openai_client()
+        
+        if not client:
+            # Fallback listing generation
+            analysis_json = analysis_data.get('analysis_json', {})
+            pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
+            
+            brand = analysis_json.get('brand', 'Unknown')
+            model = analysis_json.get('model', 'Unknown')
+            specific_item = analysis_data.get('specific_item', 'item')
+            condition = analysis_json.get('condition', 'good')
+            market_value = pricing_analysis.get('market_value', 100)
+            
+            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. This item is well-maintained and ready for a new owner. Please contact me if you're interested or have any questions about this {specific_item}."
+        
         analysis_json = analysis_data.get('analysis_json', {})
         pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
         
@@ -460,10 +408,6 @@ def generate_category_listing(analysis_data):
         logger.info(f"   Model: {model}")
         logger.info(f"   Category: {category}")
         logger.info(f"   Price: ${market_value}")
-        
-        client = get_openai_client()
-        if not client:
-            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
         
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -502,7 +446,6 @@ MAKE SURE THE LISTING IS ABOUT THE {specific_item}, NOT ANYTHING ELSE!"""
         
         generated_listing = response.choices[0].message.content
         
-        # Validation check
         if specific_item.lower() not in generated_listing.lower() and brand.lower() not in generated_listing.lower():
             logger.warning(f"⚠️ LISTING DOESN'T MENTION CORRECT ITEM - REGENERATING")
             response = client.chat.completions.create(
@@ -528,7 +471,16 @@ Start with: "I'm selling my {brand} {model} {specific_item}..."
         return generated_listing
         
     except Exception as e:
-        logger.error(f"❌ Error generating listing: {e}")
+        logger.error(f"Error generating listing: {e}")
+        analysis_json = analysis_data.get('analysis_json', {})
+        pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
+        
+        brand = analysis_json.get('brand', 'Unknown')
+        model = analysis_json.get('model', 'Unknown')
+        specific_item = analysis_data.get('specific_item', 'item')
+        condition = analysis_json.get('condition', 'good')
+        market_value = pricing_analysis.get('market_value', 100)
+        
         return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
 
 # ALL YOUR ROUTES ARE PRESERVED EXACTLY AS THEY WERE
@@ -557,7 +509,7 @@ def analyze():
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
-        logger.error(f"❌ Error: {e}")
+        logger.error(f"Error: {e}")
         flash('Error processing request')
         return redirect(url_for('index'))
 
@@ -573,14 +525,11 @@ def refine_analysis():
         
         original_price = original_analysis['pricing_data']['pricing_analysis']['market_value']
         
-        # Condition multipliers
         condition_multipliers = {'excellent': 1.2, 'very_good': 1.0, 'good': 0.85, 'fair': 0.65, 'poor': 0.45, 'damaged': 0.25}
         
-        # Damage detection
         damage_keywords = ['crack', 'broken', 'damage', 'chip', 'scratch', 'dent', 'worn']
         damage_multiplier = 0.7 if any(keyword in additional_notes.lower() for keyword in damage_keywords) else 1.0
         
-        # Calculate adjusted price
         original_condition = original_analysis['analysis_json']['condition']
         original_multiplier = condition_multipliers.get(original_condition, 1.0)
         new_multiplier = condition_multipliers.get(condition, 1.0)
@@ -590,7 +539,6 @@ def refine_analysis():
         
         new_market_value = round(adjusted_price, 0)
         
-        # Update analysis
         updated_analysis = original_analysis.copy()
         updated_analysis['analysis_json']['condition'] = condition
         updated_analysis['pricing_data']['pricing_analysis']['market_value'] = new_market_value
@@ -605,7 +553,7 @@ def refine_analysis():
         return render_template('results.html', analysis_data=updated_analysis, listing=updated_listing, updated=True)
         
     except Exception as e:
-        logger.error(f"❌ Error in refine-analysis: {e}")
+        logger.error(f"Error in refine-analysis: {e}")
         return redirect(url_for('index'))
 
 @app.route('/categories')
