@@ -92,18 +92,6 @@ def bulletproof_category_detection(ai_category, specific_item, brand, model, ana
         'chanel', 'dior', 'gucci', 'prada', 'louis vuitton', 'hermes', 'versace', 'armani', 'tom ford', 'le labo', 'creed', 'coach', 'kate spade', 'michael kors', 'zara', 'h&m', 'nike', 'adidas', 'rolex', 'omega'
     ]
     
-    vehicle_brands = [
-        'ford', 'toyota', 'honda', 'bmw', 'mercedes', 'audi', 'volkswagen', 'nissan', 'mazda', 'tesla', 'holden'
-    ]
-    
-    home_brands = [
-        'ikea', 'dyson', 'shark vacuum', 'kitchenaid', 'cuisinart', 'dewalt', 'makita', 'weber'
-    ]
-    
-    baby_brands = [
-        'fisher-price', 'little tikes', 'lego', 'graco', 'chicco', 'britax', 'uppababy'
-    ]
-    
     if any(brand_lower == electronics_brand or electronics_brand in brand_lower for electronics_brand in electronics_brands):
         logger.info(f"📱 ELECTRONICS BRAND: {brand} → electronics")
         return 'electronics'
@@ -112,21 +100,7 @@ def bulletproof_category_detection(ai_category, specific_item, brand, model, ana
         logger.info(f"👗 FASHION BRAND: {brand} → fashion_beauty")
         return 'fashion_beauty'
     
-    if any(brand_lower == vehicle_brand or vehicle_brand in brand_lower for vehicle_brand in vehicle_brands):
-        vehicle_context = any(keyword in all_text for keyword in ['car', 'truck', 'van', 'vehicle', 'motor'])
-        if vehicle_context:
-            logger.info(f"🚗 VEHICLE BRAND: {brand} → vehicles")
-            return 'vehicles'
-    
-    if any(brand_lower == home_brand or home_brand in brand_lower for home_brand in home_brands):
-        logger.info(f"🏠 HOME BRAND: {brand} → home_garden")
-        return 'home_garden'
-    
-    if any(brand_lower == baby_brand or baby_brand in brand_lower for baby_brand in baby_brands):
-        logger.info(f"👶 BABY BRAND: {brand} → baby_kids")
-        return 'baby_kids'
-    
-    if any(keyword in all_text for keyword in ['phone', 'laptop', 'computer', 'tablet', 'camera', 'headphones', 'speaker', 'console', 'hard drive', 'ssd']):
+    if any(keyword in all_text for keyword in ['phone', 'laptop', 'computer', 'tablet', 'camera', 'headphones', 'speaker', 'console']):
         logger.info(f"📱 ELECTRONICS ITEM: {specific_item} → electronics")
         return 'electronics'
     
@@ -210,118 +184,121 @@ def analyze_item_photo(image_file):
             logger.error("Failed to get OpenAI client")
             return None
         
-        timestamp = datetime.now().isoformat()
-        
-        category_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": f"""Analyze this image. Focus on the main item.
+        try:
+            category_response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"""Analyze this image. Focus on the main item.
 
 Categories: electronics, vehicles, fashion_beauty, home_garden, baby_kids
 
 Return JSON: {{"primary_category": "category", "specific_item": "item", "confidence": 10}}"""
-                        },
-                        {
-                            "type": "image_url", 
-                            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                        }
-                    ]
-                }
-            ],
-            max_tokens=200,
-            temperature=0.1
-        )
-        
-        category_text = clean_json_response(category_response.choices[0].message.content)
-        
-        try:
-            category_data = json.loads(category_text)
-            ai_suggested_category = category_data.get('primary_category', 'electronics')
-            specific_item = category_data.get('specific_item', 'item')
-        except:
-            ai_suggested_category = 'electronics'
-            specific_item = 'item'
-        
-        analysis_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": f"""Analyze this {specific_item} for Australian pricing.
-
-Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "excellent/very_good/good/fair/poor", "estimated_value": "XXX AUD", "analysis_notes": "description"}}"""
-                        },
-                        {
-                            "type": "image_url", 
-                            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                        }
-                    ]
-                }
-            ],
-            max_tokens=500,
-            temperature=0.1
-        )
-        
-        analysis_text = clean_json_response(analysis_response.choices[0].message.content)
-        
-        try:
-            analysis_json = json.loads(analysis_text)
-            brand = analysis_json.get('brand', 'Unknown')
-            model = analysis_json.get('model', 'Unknown')
-            analysis_notes = analysis_json.get('analysis_notes', '')
-            ai_estimated_value = analysis_json.get('estimated_value', 'Unknown')
-            
-            corrected_category = bulletproof_category_detection(
-                ai_suggested_category, specific_item, brand, model, analysis_notes
+                            },
+                            {
+                                "type": "image_url", 
+                                "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=200,
+                temperature=0.1
             )
             
-            logger.info(f"🎯 FINAL: {ai_suggested_category} → {corrected_category}")
+            category_text = clean_json_response(category_response.choices[0].message.content)
             
-            item_info = {
-                'brand': brand,
-                'model': model,
+            try:
+                category_data = json.loads(category_text)
+                ai_suggested_category = category_data.get('primary_category', 'electronics')
+                specific_item = category_data.get('specific_item', 'item')
+            except:
+                ai_suggested_category = 'electronics'
+                specific_item = 'item'
+            
+            analysis_response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"""Analyze this {specific_item} for Australian pricing.
+
+Return JSON: {{"brand": "exact brand", "model": "exact model", "condition": "excellent/very_good/good/fair/poor", "estimated_value": "XXX AUD", "analysis_notes": "description"}}"""
+                            },
+                            {
+                                "type": "image_url", 
+                                "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=500,
+                temperature=0.1
+            )
+            
+            analysis_text = clean_json_response(analysis_response.choices[0].message.content)
+            
+            try:
+                analysis_json = json.loads(analysis_text)
+                brand = analysis_json.get('brand', 'Unknown')
+                model = analysis_json.get('model', 'Unknown')
+                analysis_notes = analysis_json.get('analysis_notes', '')
+                ai_estimated_value = analysis_json.get('estimated_value', 'Unknown')
+                
+                corrected_category = bulletproof_category_detection(
+                    ai_suggested_category, specific_item, brand, model, analysis_notes
+                )
+                
+                logger.info(f"🎯 FINAL: {ai_suggested_category} → {corrected_category}")
+                
+                item_info = {
+                    'brand': brand,
+                    'model': model,
+                    'category': corrected_category,
+                    'description': specific_item,
+                    'condition': analysis_json.get('condition', 'good'),
+                    'session_id': session_id,
+                    'image_hash': image_hash
+                }
+                
+            except Exception as e:
+                logger.error(f"Parse error: {e}")
+                item_info = {
+                    'brand': 'Unknown', 'model': 'Unknown', 'category': 'fashion_beauty',
+                    'description': specific_item, 'condition': 'good', 'session_id': session_id, 'image_hash': image_hash
+                }
+                ai_estimated_value = 'Unknown'
+            
+            fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
+            final_pricing_data = create_ai_priority_pricing(ai_estimated_value, brand, model, item_info['condition'], fallback_pricing_data)
+            
+            category_info = MARKETPLACE_CATEGORIES.get(corrected_category, MARKETPLACE_CATEGORIES['electronics'])
+            
+            return {
                 'category': corrected_category,
-                'description': specific_item,
-                'condition': analysis_json.get('condition', 'good'),
+                'category_info': category_info,
+                'analysis': analysis_text,
+                'analysis_json': item_info,
+                'pricing_data': final_pricing_data,
+                'image_hash': image_hash,
                 'session_id': session_id,
-                'image_hash': image_hash
+                'specific_item': specific_item,
+                'ai_suggested_category': ai_suggested_category,
+                'corrected_category': corrected_category,
+                'ai_estimated_value': ai_estimated_value
             }
             
         except Exception as e:
-            logger.error(f"Parse error: {e}")
-            item_info = {
-                'brand': 'Unknown', 'model': 'Unknown', 'category': 'fashion_beauty',
-                'description': specific_item, 'condition': 'good', 'session_id': session_id, 'image_hash': image_hash
-            }
-            ai_estimated_value = 'Unknown'
-        
-        fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
-        final_pricing_data = create_ai_priority_pricing(ai_estimated_value, brand, model, item_info['condition'], fallback_pricing_data)
-        
-        category_info = MARKETPLACE_CATEGORIES.get(corrected_category, MARKETPLACE_CATEGORIES['electronics'])
-        
-        return {
-            'category': corrected_category,
-            'category_info': category_info,
-            'analysis': analysis_text,
-            'analysis_json': item_info,
-            'pricing_data': final_pricing_data,
-            'image_hash': image_hash,
-            'session_id': session_id,
-            'specific_item': specific_item,
-            'ai_suggested_category': ai_suggested_category,
-            'corrected_category': corrected_category,
-            'ai_estimated_value': ai_estimated_value
-        }
-        
+            logger.error(f"OpenAI API error: {e}")
+            return None
+            
     except Exception as e:
         logger.error(f"Error analyzing photo: {e}")
         return None
@@ -338,8 +315,6 @@ def generate_category_listing(analysis_data):
         category = analysis_json.get('category', 'electronics')
         market_value = pricing_analysis.get('market_value', 100)
         
-        analysis_text = analysis_data.get('analysis', '')
-        
         logger.info(f"📝 GENERATING LISTING FOR:")
         logger.info(f"   Item: {specific_item}")
         logger.info(f"   Brand: {brand}")
@@ -352,12 +327,13 @@ def generate_category_listing(analysis_data):
             logger.error("Failed to get OpenAI client for listing generation")
             return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
         
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"""Create an Australian marketplace listing for this SPECIFIC item:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"""Create an Australian marketplace listing for this SPECIFIC item:
 
 ITEM DETAILS:
 - Item: {specific_item}
@@ -366,8 +342,6 @@ ITEM DETAILS:
 - Condition: {condition}
 - Category: {category}
 - Price: ${market_value}
-
-ANALYSIS DATA: {analysis_text}
 
 CRITICAL REQUIREMENTS:
 1. Write about the EXACT item: {brand} {model} {specific_item}
@@ -381,50 +355,29 @@ CRITICAL REQUIREMENTS:
 9. Sound authentic and trustworthy
 
 MAKE SURE THE LISTING IS ABOUT THE {specific_item}, NOT ANYTHING ELSE!"""
-                }
-            ],
-            max_tokens=400,
-            temperature=0.3
-        )
-        
-        generated_listing = response.choices[0].message.content
-        
-        if specific_item.lower() not in generated_listing.lower() and brand.lower() not in generated_listing.lower():
-            logger.warning(f"⚠️ LISTING DOESN'T MENTION CORRECT ITEM - REGENERATING")
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"""You are selling a {brand} {model} {specific_item} for ${market_value}.
-
-Write ONLY about this {specific_item}. Do NOT write about any other item.
-
-Start with: "I'm selling my {brand} {model} {specific_item}..."
-
-150 words, Australian seller, asking ${market_value}."""
                     }
                 ],
-                max_tokens=300,
-                temperature=0.1
+                max_tokens=400,
+                temperature=0.3
             )
+            
             generated_listing = response.choices[0].message.content
-        
-        logger.info(f"✅ Generated listing for {specific_item}")
-        return generated_listing
+            
+            logger.info(f"✅ Generated listing for {specific_item}")
+            return generated_listing
+            
+        except Exception as e:
+            logger.error(f"Error generating listing: {e}")
+            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
         
     except Exception as e:
         logger.error(f"Error generating listing: {e}")
-        return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
+        return f"I'm selling my item in good condition. Please contact me for more details."
 
 @app.route('/')
 def index():
     session.clear()
-    return render_template('index.html', categories=MARKETPLACE_CATEGORIES)
-
-@app.route('/loading')
-def loading():
-    return render_template('loading.html')
+    return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -435,11 +388,27 @@ def analyze():
         
         photo = request.files['photo']
         
-        # First show loading page
-        session['processing'] = True
+        # Store the photo in session for processing
+        session['photo_data'] = photo.read()
         
-        # Then process the image
-        analysis_data = analyze_item_photo(photo)
+        # Show loading page
+        return render_template('loading.html')
+        
+    except Exception as e:
+        logger.error(f"Error in analyze route: {e}")
+        flash('Error processing request - please try again')
+        return redirect(url_for('index'))
+
+@app.route('/results')
+def results():
+    try:
+        photo_data = session.get('photo_data')
+        if not photo_data:
+            return redirect(url_for('index'))
+        
+        # Process the image
+        photo_file = io.BytesIO(photo_data)
+        analysis_data = analyze_item_photo(photo_file)
         
         if not analysis_data:
             flash('Error analyzing photo - please try again')
@@ -451,56 +420,9 @@ def analyze():
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
-        logger.error(f"Error in analyze route: {e}")
+        logger.error(f"Error in results route: {e}")
         flash('Error processing request - please try again')
         return redirect(url_for('index'))
-
-@app.route('/refine-analysis', methods=['POST'])
-def refine_analysis():
-    try:
-        original_analysis = session.get('current_analysis')
-        if not original_analysis:
-            return redirect(url_for('index'))
-        
-        condition = request.form.get('condition', original_analysis['analysis_json']['condition']).strip()
-        additional_notes = request.form.get('additional_notes', '').strip()
-        
-        original_price = original_analysis['pricing_data']['pricing_analysis']['market_value']
-        
-        condition_multipliers = {'excellent': 1.2, 'very_good': 1.0, 'good': 0.85, 'fair': 0.65, 'poor': 0.45, 'damaged': 0.25}
-        
-        damage_keywords = ['crack', 'broken', 'damage', 'chip', 'scratch', 'dent', 'worn']
-        damage_multiplier = 0.7 if any(keyword in additional_notes.lower() for keyword in damage_keywords) else 1.0
-        
-        original_condition = original_analysis['analysis_json']['condition']
-        original_multiplier = condition_multipliers.get(original_condition, 1.0)
-        new_multiplier = condition_multipliers.get(condition, 1.0)
-        
-        base_price = original_price / original_multiplier
-        adjusted_price = base_price * new_multiplier * damage_multiplier
-        
-        new_market_value = round(adjusted_price, 0)
-        
-        updated_analysis = original_analysis.copy()
-        updated_analysis['analysis_json']['condition'] = condition
-        updated_analysis['pricing_data']['pricing_analysis']['market_value'] = new_market_value
-        updated_analysis['pricing_data']['pricing_analysis']['quick_sale'] = round(adjusted_price * 0.85, 0)
-        updated_analysis['pricing_data']['pricing_analysis']['premium_price'] = round(adjusted_price * 1.15, 0)
-        
-        session['current_analysis'] = updated_analysis
-        updated_listing = generate_category_listing(updated_analysis)
-        
-        logger.info(f"💰 PRICE ADJUSTED: ${original_price} → ${new_market_value}")
-        
-        return render_template('results.html', analysis_data=updated_analysis, listing=updated_listing, updated=True)
-        
-    except Exception as e:
-        logger.error(f"Error in refine-analysis: {e}")
-        return redirect(url_for('index'))
-
-@app.route('/categories')
-def categories():
-    return jsonify(MARKETPLACE_CATEGORIES)
 
 @app.route('/health')
 def health():

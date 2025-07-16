@@ -3,47 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revend - Upload your photo</title>
+    <title>Revend</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
 
         .container {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 64px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .tagline {
+            font-size: 24px;
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+
+        .upload-section {
             background: white;
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-            text-align: center;
-        }
-
-        .logo {
-            font-size: 48px;
-            font-weight: bold;
-            color: #e53e3e;
-            margin-bottom: 30px;
-        }
-
-        .main-section {
-            background: #e53e3e;
-            border-radius: 15px;
-            padding: 30px;
-            color: white;
-            margin-bottom: 20px;
+            margin: 0 auto;
         }
 
         .camera-icon {
@@ -51,22 +49,24 @@
             margin-bottom: 20px;
         }
 
-        .title {
-            font-size: 24px;
+        .upload-title {
+            font-size: 28px;
             font-weight: bold;
+            color: #2d3748;
             margin-bottom: 10px;
         }
 
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
+        .upload-subtitle {
+            font-size: 16px;
+            color: #666;
             margin-bottom: 30px;
         }
 
-        .photo-options {
+        .photo-buttons {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            margin-bottom: 30px;
         }
 
         .btn {
@@ -77,38 +77,43 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
 
-        .btn-primary {
-            background: rgba(255, 255, 255, 0.2);
+        .btn-photo {
+            background: #e53e3e;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
-        .btn-primary:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .btn-photo:hover {
+            background: #c53030;
             transform: translateY(-2px);
         }
 
-        .btn-secondary {
+        .btn-upload {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-upload:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-process {
             background: #38a169;
             color: white;
         }
 
-        .btn-secondary:hover {
+        .btn-process:hover {
             background: #2f855a;
             transform: translateY(-2px);
         }
 
-        .hidden {
-            display: none;
-        }
-
         .preview-container {
             margin-top: 20px;
-            text-align: center;
+            display: none;
         }
 
         .preview-image {
@@ -120,6 +125,7 @@
 
         .camera-container {
             margin-top: 20px;
+            display: none;
         }
 
         .camera-video {
@@ -133,78 +139,67 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-top: 15px;
         }
 
         .file-input {
             display: none;
         }
 
-        .error-message {
-            color: #ff6b6b;
-            margin-top: 10px;
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
             font-size: 14px;
+            display: none;
         }
 
-        .success-message {
-            color: #51cf66;
-            margin-top: 10px;
-            font-size: 14px;
+        .message.success {
+            background: #f0fff4;
+            color: #38a169;
+            border: 1px solid #9ae6b4;
         }
 
-        .photo-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .main-section {
-                padding: 20px;
-            }
+        .message.error {
+            background: #fed7d7;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">Revend</div>
+        <div class="tagline">Snap. Price. Sell.</div>
         
-        <div class="main-section">
-            <div class="camera-icon">📷</div>
-            <div class="title">Upload your photo</div>
-            <div class="subtitle">Any item works • Get instant pricing</div>
+        <div class="upload-section">
+            <div class="camera-icon">📸</div>
+            <div class="upload-title">Upload your photo</div>
+            <div class="upload-subtitle">Any item works • Get instant pricing</div>
             
-            <div class="photo-options">
-                <form id="photoForm" method="POST" action="/analyze" enctype="multipart/form-data">
-                    <input type="file" id="fileInput" name="photo" class="file-input" accept="image/*">
-                    
-                    <div class="photo-buttons">
-                        <button type="button" class="btn btn-primary" onclick="takePhoto()">📸 Take Photo</button>
-                        <button type="button" class="btn btn-primary" onclick="uploadPhoto()">📂 Upload Photo</button>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-secondary">Get my listing</button>
-                </form>
-            </div>
+            <form id="uploadForm" action="/analyze" method="post" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="photo" class="file-input" accept="image/*">
+                
+                <div class="photo-buttons">
+                    <button type="button" class="btn btn-photo" onclick="takePhoto()">📸 Take Photo</button>
+                    <button type="button" class="btn btn-upload" onclick="uploadPhoto()">📂 Upload Photo</button>
+                </div>
+                
+                <button type="submit" class="btn btn-process">Get my listing</button>
+            </form>
             
-            <div class="preview-container hidden" id="previewContainer">
+            <div class="preview-container" id="previewContainer">
                 <img id="previewImage" class="preview-image" alt="Preview">
             </div>
             
-            <div class="camera-container hidden" id="cameraContainer">
+            <div class="camera-container" id="cameraContainer">
                 <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
                 <div class="camera-controls">
-                    <button type="button" class="btn btn-primary" onclick="capturePhoto()">Capture</button>
-                    <button type="button" class="btn btn-primary" onclick="closeCameraView()">Cancel</button>
+                    <button type="button" class="btn btn-photo" onclick="capturePhoto()">Capture</button>
+                    <button type="button" class="btn btn-upload" onclick="closeCameraView()">Cancel</button>
                 </div>
             </div>
             
-            <div id="errorMessage" class="error-message hidden"></div>
-            <div id="successMessage" class="success-message hidden"></div>
+            <div id="messageContainer" class="message"></div>
         </div>
     </div>
 
@@ -234,11 +229,11 @@
                 const video = document.getElementById('cameraVideo');
                 video.srcObject = cameraStream;
                 
-                document.getElementById('cameraContainer').classList.remove('hidden');
+                document.getElementById('cameraContainer').style.display = 'block';
                 showMessage('Camera ready! Position your item and tap capture.', 'success');
             } catch (error) {
                 console.error('Error accessing camera:', error);
-                showMessage('Camera access denied. Please allow camera access or use upload photo instead.', 'error');
+                showMessage('Camera access denied. Please use upload photo instead.', 'error');
             }
         }
 
@@ -251,11 +246,9 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0);
             
-            // Convert to blob and create file
             canvas.toBlob((blob) => {
                 const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
                 
-                // Create a new FileList with the captured image
                 const dt = new DataTransfer();
                 dt.items.add(file);
                 document.getElementById('fileInput').files = dt.files;
@@ -270,10 +263,9 @@
                 cameraStream.getTracks().forEach(track => track.stop());
                 cameraStream = null;
             }
-            document.getElementById('cameraContainer').classList.add('hidden');
+            document.getElementById('cameraContainer').style.display = 'none';
         }
 
-        // Handle file input change
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -282,32 +274,28 @@
         });
 
         function handleImageFile(file) {
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 showMessage('Please select a valid image file.', 'error');
                 return;
             }
 
-            // Validate file size (max 10MB)
             if (file.size > 10 * 1024 * 1024) {
                 showMessage('Image file is too large. Please select a file smaller than 10MB.', 'error');
                 return;
             }
 
-            // Create preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 const previewImg = document.getElementById('previewImage');
                 previewImg.src = e.target.result;
-                document.getElementById('previewContainer').classList.remove('hidden');
+                document.getElementById('previewContainer').style.display = 'block';
                 
                 showMessage('Image loaded successfully! Click "Get my listing" to continue.', 'success');
             };
             reader.readAsDataURL(file);
         }
 
-        // Handle form submission
-        document.getElementById('photoForm').addEventListener('submit', function(e) {
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
             const fileInput = document.getElementById('fileInput');
             
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -317,32 +305,21 @@
             }
             
             showMessage('Processing your image...', 'success');
-            // Form will submit normally to /analyze endpoint
         });
 
         function showMessage(message, type) {
-            // Hide all messages first
-            document.getElementById('errorMessage').classList.add('hidden');
-            document.getElementById('successMessage').classList.add('hidden');
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = message;
+            messageContainer.className = `message ${type}`;
+            messageContainer.style.display = 'block';
             
-            // Show appropriate message
-            if (type === 'error') {
-                document.getElementById('errorMessage').textContent = message;
-                document.getElementById('errorMessage').classList.remove('hidden');
-            } else {
-                document.getElementById('successMessage').textContent = message;
-                document.getElementById('successMessage').classList.remove('hidden');
-            }
-            
-            // Auto-hide success messages after 3 seconds
             if (type === 'success') {
                 setTimeout(() => {
-                    document.getElementById('successMessage').classList.add('hidden');
+                    messageContainer.style.display = 'none';
                 }, 3000);
             }
         }
 
-        // Clean up camera stream when page is unloaded
         window.addEventListener('beforeunload', function() {
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => track.stop());

@@ -24,6 +24,7 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
+            border-top: 5px solid #e53e3e;
         }
 
         .logo {
@@ -41,30 +42,32 @@
         }
 
         .time-text {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .progress-container {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: #f1f1f1;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
         }
 
         .progress-bar {
             height: 100%;
             background: #e53e3e;
             width: 0%;
-            border-radius: 3px;
-            animation: progress 30s linear infinite;
+            border-radius: 4px;
+            animation: progress 30s ease-in-out infinite;
         }
 
         @keyframes progress {
             0% { width: 0%; }
+            50% { width: 75%; }
             100% { width: 100%; }
         }
 
@@ -72,6 +75,22 @@
             font-size: 14px;
             color: #666;
             margin-top: 20px;
+            font-style: italic;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e53e3e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -83,14 +102,37 @@
         <div class="progress-container">
             <div class="progress-bar"></div>
         </div>
+        <div class="spinner"></div>
         <div class="loading-message">Starting analysis...</div>
     </div>
 
     <script>
-        // Auto-redirect to results after processing
+        const messages = [
+            "Starting analysis...",
+            "Identifying item...",
+            "Analyzing condition...",
+            "Calculating price...",
+            "Generating listing...",
+            "Almost done..."
+        ];
+
+        let messageIndex = 0;
+        const messageElement = document.querySelector('.loading-message');
+
+        function updateMessage() {
+            if (messageIndex < messages.length) {
+                messageElement.textContent = messages[messageIndex];
+                messageIndex++;
+                setTimeout(updateMessage, 5000);
+            }
+        }
+
+        updateMessage();
+
+        // Redirect after 32 seconds
         setTimeout(() => {
-            window.location.href = '/analyze-complete';
-        }, 2000);
+            window.location.href = '/results';
+        }, 32000);
     </script>
 </body>
 </html>
