@@ -22,12 +22,16 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    return OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-    api_key = os.getenv("OPENAI_API_KEY")
-    print(f"DEBUG: API key present: {api_key is not None}")
-    print(f"DEBUG: API key starts with: {api_key[:7] if api_key else None}...")
+    api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
-        print("ERROR: OPENAI_API_KEY not found in environment")
+        logger.error("OPENAI_API_KEY not found in environment")
+        return None
+    
+    try:
+        return OpenAI(api_key=api_key)
+    except Exception as e:
+        logger.error(f"Error creating OpenAI client: {e}")
+        return None
 
 pricing_engine = RealPricingEngine()
 
@@ -203,6 +207,10 @@ def analyze_item_photo(image_file):
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
         
         client = get_openai_client()
+        if not client:
+            logger.error("Failed to get OpenAI client")
+            return None
+        
         timestamp = datetime.now().isoformat()
         
         category_response = client.chat.completions.create(
@@ -232,7 +240,6 @@ Return JSON: {{"primary_category": "category", "specific_item": "item", "confide
         
         category_text = clean_json_response(category_response.choices[0].message.content)
         
-        # THIS IS THE LINE THAT WAS BROKEN - I'm fixing the parenthesis issue here
         try:
             category_data = json.loads(category_text)
             ai_suggested_category = category_data.get('primary_category', 'electronics')
@@ -342,6 +349,9 @@ def generate_category_listing(analysis_data):
         logger.info(f"   Price: ${market_value}")
         
         client = get_openai_client()
+        if not client:
+            logger.error("Failed to get OpenAI client for listing generation")
+            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
         
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -408,7 +418,6 @@ Start with: "I'm selling my {brand} {model} {specific_item}..."
         logger.error(f"Error generating listing: {e}")
         return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
 
-# ALL YOUR ROUTES ARE PRESERVED EXACTLY AS THEY WERE
 @app.route('/')
 def index():
     session.clear()
@@ -425,7 +434,7 @@ def analyze():
         analysis_data = analyze_item_photo(photo)
         
         if not analysis_data:
-            flash('Error analyzing photo')
+            flash('Error analyzing photo - please try again')
             return redirect(url_for('index'))
         
         session['current_analysis'] = analysis_data
@@ -434,8 +443,8 @@ def analyze():
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
-        logger.error(f"Error: {e}")
-        flash('Error processing request')
+        logger.error(f"Error in analyze route: {e}")
+        flash('Error processing request - please try again')
         return redirect(url_for('index'))
 
 @app.route('/refine-analysis', methods=['POST'])
