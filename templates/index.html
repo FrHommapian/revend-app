@@ -13,12 +13,26 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(229, 62, 62, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(229, 62, 62, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(229, 62, 62, 0.05) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .main-container {
@@ -27,33 +41,37 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: white;
             width: 100%;
             max-width: 500px;
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
             font-size: 64px;
             font-weight: bold;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #e53e3e;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
         .tagline {
             font-size: 24px;
             margin-bottom: 60px;
             font-weight: 300;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            color: #2d3748;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
         .upload-section {
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
             text-align: center;
+            border: 1px solid rgba(229, 62, 62, 0.1);
         }
 
         .camera-icon {
@@ -204,6 +222,7 @@
             text-align: center;
             max-width: 400px;
             width: 90%;
+            border-top: 5px solid #e53e3e;
         }
 
         .spinner {
@@ -397,32 +416,8 @@
             // Start loading messages
             startLoadingMessages();
             
-            // Submit form via fetch
-            const formData = new FormData();
-            formData.append('photo', fileInput.files[0]);
-            
-            fetch('/analyze', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                } else {
-                    throw new Error('Analysis failed');
-                }
-            })
-            .then(html => {
-                // Replace the entire page with the results
-                document.open();
-                document.write(html);
-                document.close();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showMessage('Error processing image. Please try again.', 'error');
-            });
+            // Submit form normally (not AJAX)
+            this.submit();
         });
 
         function startLoadingMessages() {
