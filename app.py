@@ -22,27 +22,23 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    """Fixed OpenAI client initialization"""
+    """Fixed OpenAI client for version 1.96.1"""
     try:
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            logger.error("❌ OPENAI_API_KEY not found in environment")
+            logger.error("❌ OPENAI_API_KEY not found")
             return None
         
         logger.info(f"🔑 API Key found: {api_key[:12]}...")
         
-        # Fixed client initialization without proxies parameter
-        client = OpenAI(
-            api_key=api_key,
-            timeout=30.0,
-            max_retries=2
-        )
+        # Simple client initialization - no extra parameters
+        client = OpenAI(api_key=api_key)
         
-        logger.info("✅ OpenAI client initialized successfully")
+        logger.info("✅ OpenAI client initialized successfully!")
         return client
         
     except Exception as e:
-        logger.error(f"❌ OpenAI client initialization failed: {e}")
+        logger.error(f"❌ OpenAI client error: {e}")
         return None
 
 pricing_engine = RealPricingEngine()
@@ -222,9 +218,8 @@ def analyze_item_photo(image_file):
         
         if not client:
             logger.error("❌ OpenAI client unavailable - using fallback pricing")
-            logger.warning("⚠️ Using fallback analysis")
             
-            # Fallback analysis without OpenAI
+            # Enhanced fallback analysis
             item_info = {
                 'brand': 'Unknown',
                 'model': 'Unknown',
@@ -237,11 +232,9 @@ def analyze_item_photo(image_file):
             
             fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
             
-            category_info = MARKETPLACE_CATEGORIES.get('electronics', MARKETPLACE_CATEGORIES['electronics'])
-            
             return {
                 'category': 'electronics',
-                'category_info': category_info,
+                'category_info': MARKETPLACE_CATEGORIES['electronics'],
                 'analysis': 'OpenAI unavailable - using fallback pricing',
                 'analysis_json': item_info,
                 'pricing_data': fallback_pricing_data,
@@ -252,8 +245,6 @@ def analyze_item_photo(image_file):
                 'corrected_category': 'electronics',
                 'ai_estimated_value': 'Unknown'
             }
-        
-        timestamp = datetime.now().isoformat()
         
         # Category analysis
         category_response = client.chat.completions.create(
@@ -283,7 +274,6 @@ Return JSON: {{"primary_category": "category", "specific_item": "item", "confide
         
         category_text = clean_json_response(category_response.choices[0].message.content)
         
-        # Parse category response
         try:
             category_data = json.loads(category_text)
             ai_suggested_category = category_data.get('primary_category', 'electronics')
@@ -377,19 +367,6 @@ def generate_category_listing(analysis_data):
     try:
         client = get_openai_client()
         
-        if not client:
-            # Fallback listing generation
-            analysis_json = analysis_data.get('analysis_json', {})
-            pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
-            
-            brand = analysis_json.get('brand', 'Unknown')
-            model = analysis_json.get('model', 'Unknown')
-            specific_item = analysis_data.get('specific_item', 'item')
-            condition = analysis_json.get('condition', 'good')
-            market_value = pricing_analysis.get('market_value', 100)
-            
-            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. This item is well-maintained and ready for a new owner. Please contact me if you're interested or have any questions about this {specific_item}."
-        
         analysis_json = analysis_data.get('analysis_json', {})
         pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
         
@@ -399,6 +376,9 @@ def generate_category_listing(analysis_data):
         condition = analysis_json.get('condition', 'good')
         category = analysis_json.get('category', 'electronics')
         market_value = pricing_analysis.get('market_value', 100)
+        
+        if not client:
+            return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. This item is well-maintained and ready for a new owner. Please contact me if you're interested."
         
         analysis_text = analysis_data.get('analysis', '')
         
@@ -414,76 +394,25 @@ def generate_category_listing(analysis_data):
             messages=[
                 {
                     "role": "user",
-                    "content": f"""Create an Australian marketplace listing for this SPECIFIC item:
+                    "content": f"""Create an Australian marketplace listing for this item:
 
-ITEM DETAILS:
-- Item: {specific_item}
-- Brand: {brand}
-- Model: {model}
-- Condition: {condition}
-- Category: {category}
-- Price: ${market_value}
+Item: {brand} {model} {specific_item}
+Condition: {condition}
+Price: ${market_value}
 
-ANALYSIS DATA: {analysis_text}
-
-CRITICAL REQUIREMENTS:
-1. Write about the EXACT item: {brand} {model} {specific_item}
-2. Price: Ask for ${market_value}
-3. Write as an Australian seller
-4. Personal story about owning this {specific_item}
-5. Why selling this {specific_item}
-6. Care and usage details
-7. 150-250 words
-8. No emojis
-9. Sound authentic and trustworthy
-
-MAKE SURE THE LISTING IS ABOUT THE {specific_item}, NOT ANYTHING ELSE!"""
+Write 150-200 words as an Australian seller. Include personal story, condition details, and asking price."""
                 }
             ],
             max_tokens=400,
             temperature=0.3
         )
         
-        generated_listing = response.choices[0].message.content
-        
-        if specific_item.lower() not in generated_listing.lower() and brand.lower() not in generated_listing.lower():
-            logger.warning(f"⚠️ LISTING DOESN'T MENTION CORRECT ITEM - REGENERATING")
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"""You are selling a {brand} {model} {specific_item} for ${market_value}.
-
-Write ONLY about this {specific_item}. Do NOT write about any other item.
-
-Start with: "I'm selling my {brand} {model} {specific_item}..."
-
-150 words, Australian seller, asking ${market_value}."""
-                    }
-                ],
-                max_tokens=300,
-                temperature=0.1
-            )
-            generated_listing = response.choices[0].message.content
-        
-        logger.info(f"✅ Generated listing for {specific_item}")
-        return generated_listing
+        return response.choices[0].message.content
         
     except Exception as e:
         logger.error(f"Error generating listing: {e}")
-        analysis_json = analysis_data.get('analysis_json', {})
-        pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
-        
-        brand = analysis_json.get('brand', 'Unknown')
-        model = analysis_json.get('model', 'Unknown')
-        specific_item = analysis_data.get('specific_item', 'item')
-        condition = analysis_json.get('condition', 'good')
-        market_value = pricing_analysis.get('market_value', 100)
-        
         return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. Please contact me for more details."
 
-# ALL YOUR ROUTES ARE PRESERVED EXACTLY AS THEY WERE
 @app.route('/')
 def index():
     session.clear()
