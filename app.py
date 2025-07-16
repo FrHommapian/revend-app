@@ -22,11 +22,10 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    api_key = os.getenv('OPENAI_API_KEY')
+    api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         logger.error("OPENAI_API_KEY not found in environment")
         return None
-    
     try:
         return OpenAI(api_key=api_key)
     except Exception as e:
@@ -423,6 +422,10 @@ def index():
     session.clear()
     return render_template('index.html', categories=MARKETPLACE_CATEGORIES)
 
+@app.route('/loading')
+def loading():
+    return render_template('loading.html')
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
@@ -431,6 +434,11 @@ def analyze():
             return redirect(url_for('index'))
         
         photo = request.files['photo']
+        
+        # First show loading page
+        session['processing'] = True
+        
+        # Then process the image
         analysis_data = analyze_item_photo(photo)
         
         if not analysis_data:

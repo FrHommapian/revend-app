@@ -3,106 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revend - Your Listing</title>
+    <title>Revend - Results</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
-        
+
         .container {
-            max-width: 800px;
+            max-width: 400px;
             margin: 0 auto;
+        }
+
+        .card {
             background: white;
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
-        
-        .header {
-            text-align: center;
+
+        .strategy-section {
             margin-bottom: 30px;
         }
-        
-        .logo {
-            font-size: 36px;
-            font-weight: bold;
-            color: #e53e3e;
-            margin-bottom: 10px;
-        }
-        
-        .pricing-info {
+
+        .strategy-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 15px;
-            padding: 20px;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .strategy-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .strategy-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #2d3748;
+        }
+
+        .strategy-content p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .strategy-content .highlight {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .timing-section {
             margin-bottom: 30px;
         }
-        
-        .price-display {
-            font-size: 32px;
-            font-weight: bold;
-            color: #38a169;
-            text-align: center;
+
+        .timing-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 15px;
-        }
-        
-        .listing-container {
+            padding: 12px;
             background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 10px;
         }
-        
+
+        .timing-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .timing-content {
+            flex: 1;
+        }
+
+        .timing-content .platform {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .timing-content .time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .analysis-section {
+            margin-bottom: 30px;
+        }
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .analysis-value {
+            font-size: 18px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .listing-section {
+            background: #e53e3e;
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .listing-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         .listing-text {
             font-size: 16px;
             line-height: 1.6;
-            color: #2d3748;
-            white-space: pre-wrap;
+            margin-bottom: 30px;
         }
-        
-        .back-btn {
-            display: inline-block;
-            background: #e53e3e;
+
+        .copy-button {
+            background: #c53030;
             color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #a02626;
+            transform: translateY(-2px);
+        }
+
+        .copy-button:active {
+            transform: translateY(0);
+        }
+
+        .vertical-text {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            font-size: 20px;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-right: 20px;
+            line-height: 1.2;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background: #4a5568;
+            color: white;
+            border: none;
             padding: 12px 24px;
             border-radius: 25px;
-            text-decoration: none;
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
             margin-top: 20px;
             transition: all 0.3s ease;
         }
-        
-        .back-btn:hover {
-            background: #c53030;
+
+        .back-button:hover {
+            background: #2d3748;
             transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">Revend</div>
-            <h1>Your Listing is Ready!</h1>
-        </div>
-        
-        {% if analysis_data and analysis_data.pricing_data %}
-        <div class="pricing-info">
-            <div class="price-display">
-                ${{ analysis_data.pricing_data.pricing_analysis.market_value }}
+        <!-- Strategy Section -->
+        <div class="card">
+            <div class="strategy-section">
+                <div class="strategy-item">
+                    <div class="strategy-icon">⚡</div>
+                    <div class="strategy-content">
+                        <h3>Market urgency</h3>
+                        <p>📈 <span class="highlight">Normal demand</span></p>
+                        <p>⏱️ <span class="highlight">Time your listing for optimal results</span></p>
+                    </div>
+                </div>
             </div>
-            <p style="text-align: center; color: #666;">
-                Estimated Market Value
-            </p>
+
+            <div class="timing-section">
+                <div class="section-title">
+                    <div class="timing-icon">💻</div>
+                    <span>Platform timing</span>
+                </div>
+                
+                <div class="timing-item">
+                    <div class="timing-icon">📘</div>
+                    <div class="timing-content">
+                        <div class="platform">Facebook Marketplace:</div>
+                        <div class="time">Sunday evenings (7-9 PM)</div>
+                    </div>
+                </div>
+
+                <div class="timing-item">
+                    <div class="timing-icon">🌳</div>
+                    <div class="timing-content">
+                        <div class="platform">Gumtree:</div>
+                        <div class="time">Weekend afternoons (2-6 PM)</div>
+                    </div>
+                </div>
+
+                <div class="timing-item">
+                    <div class="timing-icon">🅱️</div>
+                    <div class="timing-content">
+                        <div class="platform">eBay:</div>
+                        <div class="time">Tuesday-Thursday (7-9 PM)</div>
+                    </div>
+                </div>
+
+                <div class="timing-item">
+                    <div class="timing-icon">⚫</div>
+                    <div class="timing-content">
+                        <div class="platform">General:</div>
+                        <div class="time">Weekend evenings (6-8 PM)</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endif %}
-        
-        <div class="listing-container">
-            <h3 style="margin-bottom: 15px;">Your Generated Listing:</h3>
-            <div class="listing-text">{{ listing }}</div>
+
+        <!-- Analysis Section -->
+        <div class="card">
+            <div class="analysis-section">
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="vertical-text">STRATEGY</div>
+                    <div style="flex: 1;">
+                        <div class="analysis-item">
+                            <div class="analysis-label">ITEM</div>
+                            <div class="analysis-value">{{ analysis_data.analysis_json.description if analysis_data and analysis_data.analysis_json else 'Item' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="vertical-text">OPTIMAL</div>
+                    <div style="flex: 1;">
+                        <div class="analysis-item">
+                            <div class="analysis-label">BRAND</div>
+                            <div class="analysis-value">{{ analysis_data.analysis_json.brand if analysis_data and analysis_data.analysis_json else 'Unknown' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="vertical-text">DIGITAL</div>
+                    <div style="flex: 1;">
+                        <div class="analysis-item">
+                            <div class="analysis-label">MODEL</div>
+                            <div class="analysis-value">{{ analysis_data.analysis_json.model if analysis_data and analysis_data.analysis_json else 'Unknown' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="vertical-text">VERIFIED</div>
+                    <div style="flex: 1;">
+                        <div class="analysis-item">
+                            <div class="analysis-label">CONDITION</div>
+                            <div class="analysis-value">{{ analysis_data.analysis_json.condition if analysis_data and analysis_data.analysis_json else 'Good' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <a href="/" class="back-btn">Create Another Listing</a>
+
+        <!-- Listing Section -->
+        <div class="listing-section">
+            <div class="listing-title">Your listing</div>
+            <div class="listing-text">
+                {{ listing if listing else 'Your listing will appear here...' }}
+            </div>
+            <button class="copy-button" onclick="copyListing()">Copy listing</button>
+        </div>
+
+        <a href="/" class="back-button">Create Another Listing</a>
     </div>
+
+    <script>
+        function copyListing() {
+            const listingText = document.querySelector('.listing-text').textContent;
+            navigator.clipboard.writeText(listingText).then(() => {
+                const button = document.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = '#38a169';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#c53030';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+    </script>
 </body>
 </html>
