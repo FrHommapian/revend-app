@@ -5,43 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revend</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
-        .container {
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             color: white;
-            padding: 20px;
+            width: 100%;
+            max-width: 500px;
         }
 
         .logo {
             font-size: 64px;
             font-weight: bold;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .tagline {
             font-size: 24px;
             margin-bottom: 60px;
             font-weight: 300;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .upload-section {
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
-            margin: 0 auto;
+            text-align: center;
         }
 
         .camera-icon {
@@ -77,6 +89,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .btn-photo {
@@ -109,6 +122,12 @@
         .btn-process:hover {
             background: #2f855a;
             transform: translateY(-2px);
+        }
+
+        .btn-process:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .preview-container {
@@ -164,10 +183,61 @@
             color: #e53e3e;
             border: 1px solid #feb2b2;
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e53e3e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 48px;
+            }
+            
+            .tagline {
+                font-size: 20px;
+            }
+            
+            .upload-section {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <div class="logo">Revend</div>
         <div class="tagline">Snap. Price. Sell.</div>
         
@@ -184,7 +254,7 @@
                     <button type="button" class="btn btn-upload" onclick="uploadPhoto()">📂 Upload Photo</button>
                 </div>
                 
-                <button type="submit" class="btn btn-process">Get my listing</button>
+                <button type="submit" class="btn btn-process" id="processBtn" disabled>Get my listing</button>
             </form>
             
             <div class="preview-container" id="previewContainer">
@@ -203,9 +273,21 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div style="font-size: 48px; font-weight: bold; color: #e53e3e; margin-bottom: 20px;">Revend</div>
+            <div style="font-size: 24px; font-weight: bold; color: #2d3748; margin-bottom: 10px;">Analyzing your item</div>
+            <div style="font-size: 16px; color: #666; margin-bottom: 30px;">This usually takes 30-60 seconds</div>
+            <div class="spinner"></div>
+            <div id="loadingMessage" style="font-size: 14px; color: #666; font-style: italic;">Starting analysis...</div>
+        </div>
+    </div>
+
     <script>
         let currentImageData = null;
         let cameraStream = null;
+        let hasPhoto = false;
 
         function takePhoto() {
             startCamera();
@@ -290,22 +372,82 @@
                 previewImg.src = e.target.result;
                 document.getElementById('previewContainer').style.display = 'block';
                 
+                hasPhoto = true;
+                document.getElementById('processBtn').disabled = false;
+                document.getElementById('processBtn').style.background = '#38a169';
+                
                 showMessage('Image loaded successfully! Click "Get my listing" to continue.', 'success');
             };
             reader.readAsDataURL(file);
         }
 
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const fileInput = document.getElementById('fileInput');
             
             if (!fileInput.files || fileInput.files.length === 0) {
-                e.preventDefault();
                 showMessage('Please take a photo or upload an image first.', 'error');
                 return;
             }
             
-            showMessage('Processing your image...', 'success');
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Start loading messages
+            startLoadingMessages();
+            
+            // Submit form via fetch
+            const formData = new FormData();
+            formData.append('photo', fileInput.files[0]);
+            
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Analysis failed');
+                }
+            })
+            .then(html => {
+                // Replace the entire page with the results
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                showMessage('Error processing image. Please try again.', 'error');
+            });
         });
+
+        function startLoadingMessages() {
+            const messages = [
+                "Starting analysis...",
+                "Identifying item...",
+                "Analyzing condition...",
+                "Calculating price...",
+                "Generating listing...",
+                "Almost done..."
+            ];
+
+            let messageIndex = 0;
+            const messageElement = document.getElementById('loadingMessage');
+
+            function updateMessage() {
+                if (messageIndex < messages.length) {
+                    messageElement.textContent = messages[messageIndex];
+                    messageIndex++;
+                    setTimeout(updateMessage, 5000);
+                }
+            }
+
+            updateMessage();
+        }
 
         function showMessage(message, type) {
             const messageContainer = document.getElementById('messageContainer');

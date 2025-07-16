@@ -11,6 +11,7 @@ import io
 import re
 import hashlib
 import time
+import tempfile
 from pricing_engine import RealPricingEngine
 
 load_dotenv()
@@ -388,39 +389,26 @@ def analyze():
         
         photo = request.files['photo']
         
-        # Store the photo in session for processing
-        session['photo_data'] = photo.read()
-        
-        # Show loading page
-        return render_template('loading.html')
-        
-    except Exception as e:
-        logger.error(f"Error in analyze route: {e}")
-        flash('Error processing request - please try again')
-        return redirect(url_for('index'))
-
-@app.route('/results')
-def results():
-    try:
-        photo_data = session.get('photo_data')
-        if not photo_data:
-            return redirect(url_for('index'))
-        
-        # Process the image
-        photo_file = io.BytesIO(photo_data)
-        analysis_data = analyze_item_photo(photo_file)
+        # Process the image immediately
+        analysis_data = analyze_item_photo(photo)
         
         if not analysis_data:
             flash('Error analyzing photo - please try again')
             return redirect(url_for('index'))
         
-        session['current_analysis'] = analysis_data
+        # Store only essential data in session (not the image)
+        session['current_analysis'] = {
+            'analysis_json': analysis_data['analysis_json'],
+            'pricing_data': analysis_data['pricing_data'],
+            'specific_item': analysis_data['specific_item']
+        }
+        
         listing = generate_category_listing(analysis_data)
         
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
-        logger.error(f"Error in results route: {e}")
+        logger.error(f"Error in analyze route: {e}")
         flash('Error processing request - please try again')
         return redirect(url_for('index'))
 
