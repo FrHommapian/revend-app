@@ -152,6 +152,12 @@
             font-size: 14px;
         }
 
+        .photo-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -173,8 +179,13 @@
             <div class="subtitle">Any item works • Get instant pricing</div>
             
             <div class="photo-options">
-                <input type="file" id="fileInput" class="file-input" accept="image/*" capture="environment">
-                <button class="btn btn-primary" onclick="chooseUploadMethod()">Choose photo</button>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                
+                <div class="photo-buttons">
+                    <button class="btn btn-primary" onclick="takePhoto()">📸 Take Photo</button>
+                    <button class="btn btn-primary" onclick="uploadPhoto()">📂 Upload Photo</button>
+                </div>
+                
                 <button class="btn btn-secondary" onclick="processImage()">Get my listing</button>
             </div>
             
@@ -199,31 +210,12 @@
         let currentImageData = null;
         let cameraStream = null;
 
-        function chooseUploadMethod() {
-            // Check if we're on mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                // Show options for mobile users
-                showMobileOptions();
-            } else {
-                // For desktop, just show file picker
-                document.getElementById('fileInput').click();
-            }
+        function takePhoto() {
+            startCamera();
         }
 
-        function showMobileOptions() {
-            const options = confirm("Choose photo source:\nOK = Camera\nCancel = Gallery");
-            
-            if (options) {
-                // User chose camera
-                startCamera();
-            } else {
-                // User chose gallery
-                const fileInput = document.getElementById('fileInput');
-                fileInput.removeAttribute('capture');
-                fileInput.click();
-            }
+        function uploadPhoto() {
+            document.getElementById('fileInput').click();
         }
 
         async function startCamera() {
@@ -244,8 +236,7 @@
                 showMessage('Camera ready! Position your item and tap capture.', 'success');
             } catch (error) {
                 console.error('Error accessing camera:', error);
-                showMessage('Camera access denied. Please use file upload instead.', 'error');
-                document.getElementById('fileInput').click();
+                showMessage('Camera access denied. Please allow camera access or use upload photo instead.', 'error');
             }
         }
 
@@ -315,7 +306,7 @@
 
         async function processImage() {
             if (!currentImageData) {
-                showMessage('Please select an image first.', 'error');
+                showMessage('Please take a photo or upload an image first.', 'error');
                 return;
             }
 
