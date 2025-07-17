@@ -41,39 +41,48 @@ def call_openai_api(image_base64, prompt_type="analysis"):
 
 Analyze this image thoroughly and provide:
 1. EXACT brand name (if visible)
-2. Specific item type and model
+2. Specific item type and model/year
 3. Condition assessment (excellent/very_good/good/fair/poor)
 4. Market category (fashion_beauty/electronics/vehicles/home_garden/baby_kids)
-5. Australian market value estimate in AUD
+5. REALISTIC Australian market value estimate in AUD based on current market conditions
 6. Key factors affecting price (age, condition, rarity, demand)
 
-Consider current Australian market conditions, depreciation rates, and actual resale values.
+Be very accurate with pricing - consider actual depreciation, current market demand, and realistic second-hand values.
+
+For vehicles: Consider age, mileage, condition, and actual Australian used car market prices.
+For luxury items: Consider authenticity, condition, and current resale market.
+For electronics: Consider age, condition, and rapid depreciation.
 
 Return JSON: {
     "brand": "exact brand name or unknown",
-    "model": "specific model/variant",
+    "model": "specific model/variant/year",
     "item_type": "specific item description",
     "category": "market category",
     "condition": "condition assessment",
-    "estimated_value_aud": "price in AUD",
+    "estimated_value_aud": "realistic price in AUD",
     "confidence_level": "high/medium/low",
     "price_factors": ["factor1", "factor2", "factor3"],
-    "market_notes": "brief analysis of market positioning"
+    "market_notes": "brief analysis of why this price is realistic"
 }""",
             
-            "condition": """Focus specifically on the condition of this item. Assess:
-- Physical wear and tear
-- Functionality issues
-- Aesthetic condition
-- Signs of use or damage
-- Overall preservation state
+            "pricing": """You are a pricing expert for Australian second-hand markets. 
 
-Rate from: excellent, very_good, good, fair, poor
+Analyze this item and provide REALISTIC pricing based on:
+- Current Australian market conditions
+- Actual depreciation from retail prices
+- Condition impact on value
+- Brand positioning and demand
+- Age and usage factors
+- Competition in the market
+
+Be conservative but fair. Consider what people actually pay, not wishful thinking.
 
 Return JSON: {
-    "condition": "condition_rating",
-    "condition_details": "specific observations",
-    "condition_impact": "how condition affects value"
+    "quick_sale_price": "conservative price for fast sale in AUD",
+    "market_value": "realistic market value in AUD",
+    "premium_price": "optimistic but achievable price in AUD",
+    "pricing_confidence": "high/medium/low",
+    "market_analysis": "brief explanation of pricing rationale"
 }""",
             
             "listing": """You are helping someone create a genuine, personal marketplace listing. 
@@ -116,7 +125,7 @@ Return JSON: {
                 }
             ],
             'max_tokens': 800,
-            'temperature': 0.3
+            'temperature': 0.2
         }
         
         response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload, timeout=45)
@@ -132,35 +141,27 @@ Return JSON: {
         logger.error(f"OpenAI API call failed: {e}")
         return None
 
-def search_market_data(brand, item_type, model):
-    """Search for market data to supplement AI analysis"""
+def extract_price_from_ai_estimate(estimated_value):
+    """Extract numerical price from AI estimate"""
     try:
-        # Search terms for market research
-        search_terms = [
-            f"{brand} {model} {item_type} price Australia",
-            f"{brand} {item_type} second hand market value",
-            f"{brand} {model} resale value AUD"
-        ]
+        if not estimated_value:
+            return None
         
-        market_data = []
+        # Remove currency symbols and common words
+        clean_value = re.sub(r'[^\d,.]', '', str(estimated_value))
         
-        for term in search_terms:
-            try:
-                # This is a placeholder for market research
-                # In production, you'd integrate with real market data APIs
-                market_data.append({
-                    'source': 'market_research',
-                    'search_term': term,
-                    'relevance': 'high'
-                })
-            except:
-                continue
+        # Extract number
+        numbers = re.findall(r'(\d+(?:,\d{3})*(?:\.\d{2})?)', clean_value)
         
-        return market_data
+        if numbers:
+            price = float(numbers[0].replace(',', ''))
+            # Reasonable bounds check
+            if 10 <= price <= 1000000:
+                return price
         
-    except Exception as e:
-        logger.error(f"Market research failed: {e}")
-        return []
+        return None
+    except:
+        return None
 
 def format_condition_display(condition):
     """Format condition for professional display"""
@@ -173,208 +174,117 @@ def format_condition_display(condition):
     }
     return condition_map.get(condition, condition.title())
 
-class IntelligentPricingEngine:
+class PureAIDynamicPricingEngine:
     def __init__(self):
-        # LUXURY BRAND BASE PRICES (Australian market)
-        self.luxury_base_prices = {
-            # Ultra-luxury tier
-            'hermes': {'handbag': 8000, 'wallet': 2500, 'shoes': 3000, 'default': 6000},
-            'chanel': {'handbag': 4500, 'wallet': 1500, 'shoes': 2000, 'default': 3500},
-            'louis vuitton': {'handbag': 3800, 'wallet': 1200, 'shoes': 1800, 'default': 3000},
-            
-            # High-luxury tier
-            'prada': {'handbag': 2200, 'wallet': 800, 'shoes': 1200, 'default': 1800},
-            'gucci': {'handbag': 2000, 'wallet': 700, 'shoes': 1100, 'default': 1600},
-            'dior': {'handbag': 2400, 'wallet': 900, 'shoes': 1400, 'default': 2000},
-            'versace': {'handbag': 1800, 'wallet': 600, 'shoes': 1000, 'default': 1400},
-            'armani': {'handbag': 1600, 'wallet': 500, 'shoes': 900, 'default': 1200},
-            
-            # Luxury watches
-            'rolex': {'watch': 15000, 'default': 12000},
-            'patek philippe': {'watch': 25000, 'default': 20000},
-            'audemars piguet': {'watch': 18000, 'default': 15000},
-            'omega': {'watch': 4000, 'default': 3500},
-            'cartier': {'watch': 6000, 'jewelry': 2500, 'default': 4000},
-            'tag heuer': {'watch': 2500, 'default': 2000},
-            
-            # Premium fashion
-            'coach': {'handbag': 600, 'wallet': 200, 'default': 400},
-            'michael kors': {'handbag': 300, 'wallet': 100, 'default': 200},
-            'kate spade': {'handbag': 350, 'wallet': 120, 'default': 250},
-            'marc jacobs': {'handbag': 400, 'wallet': 150, 'default': 300},
-            'tory burch': {'handbag': 380, 'wallet': 140, 'default': 280},
-            
-            # Technology premium
-            'apple': {'phone': 1200, 'laptop': 2200, 'tablet': 800, 'watch': 500, 'default': 1000},
-            'samsung': {'phone': 900, 'laptop': 1400, 'tablet': 600, 'tv': 1200, 'default': 800},
-            'sony': {'camera': 1800, 'headphones': 400, 'tv': 1400, 'console': 700, 'default': 600},
-            'canon': {'camera': 1600, 'lens': 800, 'default': 1200},
-            'nikon': {'camera': 1500, 'lens': 700, 'default': 1100},
-            'leica': {'camera': 4000, 'lens': 2000, 'default': 3000},
-            
-            # Premium sports/fashion
-            'nike': {'shoes': 180, 'clothing': 80, 'default': 130},
-            'adidas': {'shoes': 160, 'clothing': 70, 'default': 115},
-            'dr. martens': {'shoes': 200, 'default': 180},
-            'timberland': {'shoes': 180, 'default': 160},
-            'converse': {'shoes': 100, 'default': 90},
-            'vans': {'shoes': 90, 'default': 80}
-        }
-        
-        # Standard category bases for non-luxury items
-        self.category_bases = {
-            'fashion_beauty': {
-                'handbag': 80, 'wallet': 40, 'shoes': 60, 'clothing': 30,
-                'jewelry': 50, 'watch': 100, 'sunglasses': 40, 'belt': 25
-            },
-            'electronics': {
-                'smartphone': 300, 'laptop': 600, 'tablet': 200, 'camera': 400,
-                'headphones': 60, 'smartwatch': 150, 'gaming_console': 250,
-                'tv': 400, 'speaker': 80
-            },
-            'vehicles': {
-                'car': 15000, 'motorcycle': 5000, 'bicycle': 300, 'boat': 8000,
-                'caravan': 20000, 'trailer': 2000
-            },
-            'home_garden': {
-                'furniture': 150, 'appliance': 250, 'tool': 60, 'decor': 30,
-                'kitchen': 80, 'bedding': 50, 'lighting': 40
-            },
-            'baby_kids': {
-                'stroller': 120, 'crib': 180, 'car_seat': 100, 'toy': 25,
-                'clothing': 15, 'books': 8, 'gear': 60
-            }
-        }
-        
-        # Condition multipliers
+        # Only condition multipliers for adjustments - NO FIXED PRICES
         self.condition_multipliers = {
-            'excellent': 1.0,    # No reduction for excellent
-            'very_good': 0.90,   # 10% reduction
-            'good': 0.75,        # 25% reduction
-            'fair': 0.55,        # 45% reduction
-            'poor': 0.35         # 65% reduction
+            'excellent': 1.0,
+            'very_good': 0.90,
+            'good': 0.75,
+            'fair': 0.55,
+            'poor': 0.35
+        }
+        
+        # Emergency fallback values ONLY if AI completely fails
+        self.emergency_fallbacks = {
+            'vehicles': 25000,
+            'fashion_beauty': 150,
+            'electronics': 300,
+            'home_garden': 200,
+            'baby_kids': 80
         }
     
-    def calculate_base_price(self, category, item_type, brand=None):
-        """Calculate base price with proper luxury pricing"""
-        brand_lower = brand.lower() if brand else None
-        
-        # Check luxury brand first
-        if brand_lower and brand_lower in self.luxury_base_prices:
-            luxury_data = self.luxury_base_prices[brand_lower]
-            base_price = luxury_data.get(item_type, luxury_data.get('default', 500))
-            logger.info(f"💎 LUXURY PRICING: {brand} {item_type} → ${base_price}")
-            return base_price
-        
-        # Standard category pricing
-        category_data = self.category_bases.get(category, {})
-        base_price = category_data.get(item_type, category_data.get('default', 80))
-        logger.info(f"📊 STANDARD PRICING: {category} {item_type} → ${base_price}")
-        return base_price
-    
-    def generate_dynamic_pricing(self, analysis_data, market_data=None):
-        """Generate dynamic pricing with proper luxury handling"""
+    def generate_ai_dynamic_pricing(self, analysis_data, img_base64):
+        """Generate purely AI-driven dynamic pricing"""
         try:
-            brand = analysis_data.get('brand', 'unknown')
-            item_type = analysis_data.get('item_type', 'item').lower()
-            category = analysis_data.get('category', 'electronics')
-            condition = analysis_data.get('condition', 'good')
-            confidence = analysis_data.get('confidence_level', 'medium')
+            # Extract AI pricing estimate
+            ai_price = extract_price_from_ai_estimate(analysis_data.get('estimated_value_aud', ''))
             
-            # Get base price (already handles luxury vs standard)
-            base_price = self.calculate_base_price(category, item_type, brand)
+            if ai_price and ai_price > 0:
+                logger.info(f"🎯 AI PROVIDED PRICE: ${ai_price}")
+                
+                # Apply condition adjustment to AI price
+                condition = analysis_data.get('condition', 'good')
+                condition_multiplier = self.condition_multipliers.get(condition, 0.75)
+                
+                adjusted_price = ai_price * condition_multiplier
+                
+                logger.info(f"💰 AI DYNAMIC PRICING:")
+                logger.info(f"   AI Estimate: ${ai_price}")
+                logger.info(f"   Condition: {condition} (×{condition_multiplier})")
+                logger.info(f"   Final: ${adjusted_price}")
+                
+                return self._create_pricing_structure(adjusted_price, 'high', 'ai_visual_analysis')
             
-            # Apply condition multiplier
-            condition_multiplier = self.condition_multipliers.get(condition, 0.75)
-            final_price = base_price * condition_multiplier
+            # If no AI price, try secondary pricing analysis
+            logger.info("🔍 No AI price found, trying secondary analysis...")
+            secondary_analysis = call_openai_api(img_base64, "pricing")
             
-            logger.info(f"💰 PRICE CALCULATION:")
-            logger.info(f"   Base: ${base_price}")
-            logger.info(f"   Condition: {condition} (×{condition_multiplier})")
-            logger.info(f"   Final: ${final_price}")
+            if secondary_analysis:
+                try:
+                    clean_text = re.sub(r'```json\s*', '', secondary_analysis)
+                    clean_text = re.sub(r'```\s*', '', clean_text)
+                    pricing_data = json.loads(clean_text)
+                    
+                    market_value = extract_price_from_ai_estimate(pricing_data.get('market_value', ''))
+                    
+                    if market_value and market_value > 0:
+                        logger.info(f"🎯 SECONDARY AI PRICING: ${market_value}")
+                        return self._create_pricing_structure(market_value, 'medium', 'ai_secondary_analysis')
+                    
+                except Exception as e:
+                    logger.error(f"Secondary pricing parsing failed: {e}")
             
-            # Generate price range (clean integers)
-            market_value = round(final_price)
-            quick_sale = round(final_price * 0.80)
-            premium_price = round(final_price * 1.20)
-            
-            # Confidence adjustment (minimal for luxury items)
-            confidence_adjustments = {
-                'high': 1.0,
-                'medium': 0.95,
-                'low': 0.90
-            }
-            
-            # For luxury brands, use minimal confidence adjustment
-            is_luxury = brand and brand.lower() in self.luxury_base_prices
-            confidence_adj = confidence_adjustments.get(confidence, 0.95)
-            if is_luxury:
-                confidence_adj = max(confidence_adj, 0.95)  # Minimum 95% for luxury
-            
-            # Apply final adjustment
-            final_market_value = round(market_value * confidence_adj)
-            final_quick_sale = round(quick_sale * confidence_adj)
-            final_premium_price = round(premium_price * confidence_adj)
-            
-            logger.info(f"🎯 FINAL PRICING:")
-            logger.info(f"   Market: ${final_market_value}")
-            logger.info(f"   Quick Sale: ${final_quick_sale}")
-            logger.info(f"   Premium: ${final_premium_price}")
-            logger.info(f"   Confidence: {confidence} (×{confidence_adj})")
-            
-            return {
-                'pricing_analysis': {
-                    'quick_sale': final_quick_sale,
-                    'market_value': final_market_value,
-                    'premium_price': final_premium_price,
-                    'range_min': final_quick_sale,
-                    'range_max': final_premium_price,
-                    'average': final_market_value,
-                    'confidence': confidence,
-                    'pricing_source': 'ai_luxury_analysis'
-                },
-                'pricing_breakdown': {
-                    'base_price': base_price,
-                    'condition_impact': condition_multiplier,
-                    'is_luxury_brand': is_luxury,
-                    'confidence_adjustment': confidence_adj,
-                    'final_calculation': f"${base_price} × {condition_multiplier} × {confidence_adj} = ${final_market_value}"
-                },
-                'sources': [
-                    {'source': 'AI Visual Analysis', 'confidence': confidence},
-                    {'source': 'Luxury Brand Database', 'confidence': 'high' if is_luxury else 'medium'},
-                    {'source': 'Market Intelligence', 'confidence': 'medium'}
-                ]
-            }
+            # Last resort - intelligent fallback based on category
+            logger.warning("⚠️ Using intelligent fallback pricing")
+            return self._intelligent_fallback(analysis_data)
             
         except Exception as e:
-            logger.error(f"Dynamic pricing failed: {e}")
-            return self.fallback_pricing(analysis_data)
+            logger.error(f"AI Dynamic pricing failed: {e}")
+            return self._intelligent_fallback(analysis_data)
     
-    def fallback_pricing(self, analysis_data):
-        """Fallback pricing when main analysis fails"""
-        category = analysis_data.get('category', 'electronics')
-        condition = analysis_data.get('condition', 'good')
-        
-        base_price = 120  # Conservative fallback
-        condition_multiplier = self.condition_multipliers.get(condition, 0.75)
-        final_price = round(base_price * condition_multiplier)
+    def _create_pricing_structure(self, base_price, confidence, source):
+        """Create pricing structure from base price"""
+        market_value = round(base_price)
+        quick_sale = round(base_price * 0.80)
+        premium_price = round(base_price * 1.20)
         
         return {
             'pricing_analysis': {
-                'quick_sale': round(final_price * 0.8),
-                'market_value': final_price,
-                'premium_price': round(final_price * 1.2),
-                'range_min': round(final_price * 0.8),
-                'range_max': round(final_price * 1.2),
-                'average': final_price,
-                'confidence': 'low',
-                'pricing_source': 'fallback_estimation'
+                'quick_sale': quick_sale,
+                'market_value': market_value,
+                'premium_price': premium_price,
+                'range_min': quick_sale,
+                'range_max': premium_price,
+                'average': market_value,
+                'confidence': confidence,
+                'pricing_source': source
             },
-            'sources': [{'source': 'Fallback Estimation', 'confidence': 'low'}]
+            'sources': [
+                {'source': 'AI Visual Analysis', 'confidence': confidence}
+            ]
         }
+    
+    def _intelligent_fallback(self, analysis_data):
+        """Intelligent fallback when AI fails"""
+        category = analysis_data.get('category', 'electronics')
+        brand = analysis_data.get('brand', 'unknown').lower()
+        item_type = analysis_data.get('item_type', 'item').lower()
+        
+        # Use emergency fallback but try to be smart about it
+        base_price = self.emergency_fallbacks.get(category, 150)
+        
+        # Simple brand boost for known luxury brands
+        if any(luxury in brand for luxury in ['prada', 'gucci', 'chanel', 'louis vuitton', 'hermes']):
+            base_price *= 10  # Luxury boost
+        elif any(premium in brand for premium in ['bmw', 'mercedes', 'audi', 'lexus', 'tesla']):
+            base_price *= 2   # Premium boost
+        
+        logger.warning(f"🚨 FALLBACK PRICING: {category} → ${base_price}")
+        
+        return self._create_pricing_structure(base_price, 'low', 'intelligent_fallback')
 
-pricing_engine = IntelligentPricingEngine()
+pricing_engine = PureAIDynamicPricingEngine()
 
 MARKETPLACE_CATEGORIES = {
     "electronics": {
@@ -420,7 +330,7 @@ MARKETPLACE_CATEGORIES = {
 }
 
 def analyze_item_photo(image_file):
-    """Comprehensive AI-powered item analysis"""
+    """Pure AI-powered item analysis with dynamic pricing"""
     try:
         session_id = f"{int(time.time())}-{os.urandom(4).hex()}"
         filename = image_file.filename or 'unknown'
@@ -451,11 +361,10 @@ def analyze_item_photo(image_file):
         
         logger.info(f"🖼️ Image processed: {image.size}")
         
-        # Multi-stage AI analysis
+        # AI Analysis
         analysis_results = {}
         
-        # Stage 1: Primary analysis
-        logger.info("🤖 Stage 1: Primary AI analysis...")
+        logger.info("🤖 AI Visual Analysis...")
         primary_analysis = call_openai_api(img_base64, "analysis")
         
         if primary_analysis:
@@ -465,45 +374,23 @@ def analyze_item_photo(image_file):
                 clean_text = re.sub(r'```\s*', '', clean_text)
                 
                 analysis_results = json.loads(clean_text)
-                logger.info(f"✅ Primary analysis successful")
+                logger.info(f"✅ AI Analysis successful")
                 logger.info(f"🏷️ Brand: {analysis_results.get('brand', 'unknown')}")
                 logger.info(f"📱 Item: {analysis_results.get('item_type', 'unknown')}")
                 logger.info(f"💎 Condition: {analysis_results.get('condition', 'unknown')}")
+                logger.info(f"💰 AI Price: {analysis_results.get('estimated_value_aud', 'unknown')}")
                 
             except Exception as e:
-                logger.error(f"Primary analysis parsing failed: {e}")
+                logger.error(f"AI analysis parsing failed: {e}")
                 # Manual extraction fallback
                 analysis_results = extract_analysis_manually(primary_analysis)
         
-        # Stage 2: Condition-specific analysis (if primary was successful)
-        if analysis_results.get('confidence_level') != 'high':
-            logger.info("🔍 Stage 2: Detailed condition analysis...")
-            condition_analysis = call_openai_api(img_base64, "condition")
-            
-            if condition_analysis:
-                try:
-                    condition_data = json.loads(re.sub(r'```json\s*', '', condition_analysis).replace('```', ''))
-                    analysis_results.update(condition_data)
-                    logger.info(f"✅ Condition analysis enhanced")
-                except:
-                    logger.warning("Condition analysis parsing failed")
+        # Pure AI Dynamic Pricing
+        logger.info("💰 AI Dynamic Pricing...")
+        pricing_data = pricing_engine.generate_ai_dynamic_pricing(analysis_results, img_base64)
         
-        # Stage 3: Market research
-        brand = analysis_results.get('brand', 'unknown')
-        item_type = analysis_results.get('item_type', 'item')
-        model = analysis_results.get('model', 'unknown')
-        
-        if brand != 'unknown' and item_type != 'item':
-            logger.info("📊 Stage 3: Market research...")
-            market_data = search_market_data(brand, item_type, model)
-            analysis_results['market_data'] = market_data
-        
-        # Stage 4: Dynamic pricing calculation
-        logger.info("💰 Stage 4: Dynamic pricing calculation...")
-        pricing_data = pricing_engine.generate_dynamic_pricing(analysis_results)
-        
-        # Stage 5: Personal listing generation
-        logger.info("📝 Stage 5: Personal listing generation...")
+        # Personal listing generation
+        logger.info("📝 Personal listing generation...")
         personal_listing = call_openai_api(img_base64, "listing")
         
         # Build comprehensive result
@@ -525,8 +412,8 @@ def analyze_item_photo(image_file):
         logger.info(f"   Item: {item_info['description']}")
         logger.info(f"   Category: {item_info['category']}")
         logger.info(f"   Condition: {item_info['condition_display']}")
-        logger.info(f"   Price: ${pricing_data['pricing_analysis']['market_value']}")
-        logger.info(f"   Confidence: {pricing_data['pricing_analysis']['confidence']}")
+        logger.info(f"   AI Price: ${pricing_data['pricing_analysis']['market_value']}")
+        logger.info(f"   Source: {pricing_data['pricing_analysis']['pricing_source']}")
         
         return {
             'category': item_info['category'],
@@ -545,7 +432,7 @@ def analyze_item_photo(image_file):
         }
         
     except Exception as e:
-        logger.error(f"Comprehensive analysis failed: {e}")
+        logger.error(f"AI analysis failed: {e}")
         return None
 
 def extract_analysis_manually(text):
@@ -556,7 +443,8 @@ def extract_analysis_manually(text):
             'item_type': 'item',
             'category': 'electronics',
             'condition': 'good',
-            'confidence_level': 'low'
+            'confidence_level': 'low',
+            'estimated_value_aud': 'unknown'
         }
         
         text_lower = text.lower()
@@ -564,8 +452,9 @@ def extract_analysis_manually(text):
         # Brand detection
         luxury_brands = ['hermes', 'chanel', 'louis vuitton', 'prada', 'gucci', 'dior', 'rolex', 'cartier']
         premium_brands = ['coach', 'michael kors', 'apple', 'samsung', 'sony', 'canon', 'nike', 'adidas']
+        vehicle_brands = ['bmw', 'mercedes', 'audi', 'toyota', 'honda', 'ford', 'hyundai', 'tesla']
         
-        for brand in luxury_brands + premium_brands:
+        for brand in luxury_brands + premium_brands + vehicle_brands:
             if brand in text_lower:
                 result['brand'] = brand
                 break
@@ -574,6 +463,9 @@ def extract_analysis_manually(text):
         if any(word in text_lower for word in ['handbag', 'bag', 'purse']):
             result['item_type'] = 'handbag'
             result['category'] = 'fashion_beauty'
+        elif any(word in text_lower for word in ['car', 'suv', 'vehicle']):
+            result['item_type'] = 'suv'
+            result['category'] = 'vehicles'
         elif any(word in text_lower for word in ['phone', 'smartphone', 'iphone']):
             result['item_type'] = 'smartphone'
             result['category'] = 'electronics'
@@ -588,6 +480,11 @@ def extract_analysis_manually(text):
                 result['condition'] = condition.replace(' ', '_')
                 break
         
+        # Try to extract price
+        price_matches = re.findall(r'(\d+(?:,\d{3})*(?:\.\d{2})?)', text)
+        if price_matches:
+            result['estimated_value_aud'] = price_matches[0]
+        
         return result
         
     except Exception as e:
@@ -597,7 +494,8 @@ def extract_analysis_manually(text):
             'item_type': 'item',
             'category': 'electronics',
             'condition': 'good',
-            'confidence_level': 'low'
+            'confidence_level': 'low',
+            'estimated_value_aud': 'unknown'
         }
 
 def generate_personal_listing(analysis_data):
@@ -686,67 +584,6 @@ def analyze():
     except Exception as e:
         logger.error(f"Route error: {e}")
         flash('Error processing request')
-        return redirect(url_for('index'))
-
-@app.route('/refine-analysis', methods=['POST'])
-def refine_analysis():
-    try:
-        original_analysis = session.get('current_analysis')
-        if not original_analysis:
-            return redirect(url_for('index'))
-        
-        condition = request.form.get('condition', original_analysis['analysis_json']['condition']).strip()
-        additional_notes = request.form.get('additional_notes', '').strip()
-        
-        original_price = original_analysis['pricing_data']['pricing_analysis']['market_value']
-        
-        # Intelligent condition adjustment
-        condition_multipliers = {
-            'excellent': 1.0,
-            'very_good': 0.90,
-            'good': 0.75,
-            'fair': 0.55,
-            'poor': 0.35,
-            'damaged': 0.25
-        }
-        
-        # Damage keyword detection
-        damage_keywords = ['crack', 'broken', 'damage', 'chip', 'scratch', 'dent', 'worn', 'faded', 'stain']
-        damage_multiplier = 0.8 if any(keyword in additional_notes.lower() for keyword in damage_keywords) else 1.0
-        
-        # Positive keyword detection
-        positive_keywords = ['mint', 'pristine', 'like new', 'barely used', 'excellent', 'perfect']
-        positive_multiplier = 1.05 if any(keyword in additional_notes.lower() for keyword in positive_keywords) else 1.0
-        
-        # Calculate adjustment
-        original_condition = original_analysis['analysis_json']['condition']
-        original_multiplier = condition_multipliers.get(original_condition, 0.75)
-        new_multiplier = condition_multipliers.get(condition, 0.75)
-        
-        # Calculate base price from original
-        base_price = original_price / original_multiplier
-        adjusted_price = base_price * new_multiplier * damage_multiplier * positive_multiplier
-        
-        new_market_value = round(adjusted_price)
-        
-        # Update analysis
-        updated_analysis = original_analysis.copy()
-        updated_analysis['analysis_json']['condition'] = condition
-        updated_analysis['analysis_json']['condition_display'] = format_condition_display(condition)
-        updated_analysis['pricing_data']['pricing_analysis']['market_value'] = new_market_value
-        updated_analysis['pricing_data']['pricing_analysis']['quick_sale'] = round(adjusted_price * 0.8)
-        updated_analysis['pricing_data']['pricing_analysis']['premium_price'] = round(adjusted_price * 1.2)
-        
-        session['current_analysis'] = updated_analysis
-        updated_listing = generate_personal_listing(updated_analysis)
-        
-        logger.info(f"💰 INTELLIGENT ADJUSTMENT: ${original_price} → ${new_market_value}")
-        logger.info(f"📊 Factors: condition={condition}, damage={damage_multiplier}, positive={positive_multiplier}")
-        
-        return render_template('results.html', analysis_data=updated_analysis, listing=updated_listing, updated=True)
-        
-    except Exception as e:
-        logger.error(f"Refine error: {e}")
         return redirect(url_for('index'))
 
 @app.route('/categories')
