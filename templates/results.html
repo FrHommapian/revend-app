@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revend - Results</title>
+    <title>Analysis Results - ReVend</title>
     <style>
         * {
             margin: 0;
@@ -12,352 +12,438 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 20%, rgba(229, 62, 62, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(229, 62, 62, 0.1) 0%, transparent 50%);
-            pointer-events: none;
         }
 
         .container {
-            max-width: 400px;
+            max-width: 500px;
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .card {
             background: white;
             border-radius: 20px;
             padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(229, 62, 62, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        .strategy-section {
+        h1 {
+            color: #333;
+            text-align: center;
             margin-bottom: 30px;
+            font-size: 28px;
         }
 
-        .strategy-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
+        /* Price Range Card */
+        .price-range-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             border-radius: 15px;
-            border-left: 4px solid #e53e3e;
+            padding: 25px;
+            margin-bottom: 25px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
         }
 
-        .strategy-icon {
-            font-size: 24px;
-            margin-right: 15px;
-        }
-
-        .strategy-content h3 {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-            color: #2d3748;
-        }
-
-        .strategy-content p {
-            margin: 0;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .strategy-content .highlight {
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .timing-section {
-            margin-bottom: 30px;
-        }
-
-        .timing-item {
+        .price-range-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .timing-icon {
+        .price-range-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .price-item {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .price-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .price-label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .price-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .analysis-title {
             font-size: 20px;
-            margin-right: 12px;
+            font-weight: bold;
+            color: #333;
+            margin-left: 12px;
         }
 
-        .timing-content {
-            flex: 1;
-        }
-
-        .timing-content .platform {
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .timing-content .time {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .analysis-section {
-            margin-bottom: 30px;
-        }
-
-        .analysis-item {
+        .analysis-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 15px 0;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .analysis-item:last-child {
+        .analysis-row:last-child {
             border-bottom: none;
         }
 
         .analysis-label {
             font-weight: 600;
             color: #666;
-            font-size: 14px;
             text-transform: uppercase;
+            font-size: 13px;
             letter-spacing: 0.5px;
         }
 
         .analysis-value {
-            font-size: 18px;
-            color: #2d3748;
-            font-weight: 600;
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+            text-align: right;
         }
 
-        .listing-section {
-            background: #e53e3e;
+        /* Listing Card */
+        .listing-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
             color: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
         }
 
         .listing-title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
-            margin-bottom: 20px;
             text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .listing-text {
-            font-size: 16px;
             line-height: 1.6;
-            margin-bottom: 30px;
+            font-size: 15px;
+            margin-bottom: 20px;
         }
 
         .copy-button {
-            background: #c53030;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
             width: 100%;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .copy-button:hover {
-            background: #a02626;
+            background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
         }
 
-        .copy-button:active {
-            transform: translateY(0);
+        /* Refine Section */
+        .refine-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
         }
 
-        .vertical-text {
-            writing-mode: vertical-lr;
-            text-orientation: mixed;
+        .refine-title {
             font-size: 20px;
             font-weight: bold;
-            color: #e53e3e;
-            margin-right: 20px;
-            line-height: 1.2;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3748;
             margin-bottom: 20px;
+            color: #333;
             display: flex;
             align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+            font-family: inherit;
+        }
+
+        .refine-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .refine-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
         .back-button {
-            background: #4a5568;
+            background: #6c757d;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 12px 20px;
+            border-radius: 10px;
             font-size: 14px;
-            font-weight: 600;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-            transition: all 0.3s ease;
             width: 100%;
-            text-align: center;
+            margin-top: 15px;
+            transition: all 0.3s ease;
         }
 
         .back-button:hover {
-            background: #2d3748;
+            background: #5a6268;
             transform: translateY(-2px);
+        }
+
+        /* Success indicator */
+        .updated-indicator {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .price-range-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .price-item {
+                padding: 12px;
+            }
+            
+            .analysis-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .analysis-value {
+                text-align: left;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Strategy Section -->
-        <div class="card">
-            <div class="strategy-section">
-                <div class="strategy-item">
-                    <div class="strategy-icon">⚡</div>
-                    <div class="strategy-content">
-                        <h3>Market urgency</h3>
-                        <p>📈 <span class="highlight">High demand for luxury items</span></p>
-                        <p>⏱️ <span class="highlight">Time your listing for optimal results</span></p>
-                    </div>
+        <h1>Analysis Results</h1>
+        
+        {% if updated %}
+        <div class="updated-indicator">
+            ✅ Analysis Updated Successfully!
+        </div>
+        {% endif %}
+
+        <!-- Price Range Card -->
+        <div class="price-range-card">
+            <div class="price-range-title">
+                <span>💰</span>
+                <span>Pricing Range</span>
+            </div>
+            <div class="price-range-grid">
+                <div class="price-item">
+                    <div class="price-label">Quick Sale</div>
+                    <div class="price-value">${{ analysis_data.pricing_data.pricing_analysis.quick_sale }}</div>
+                </div>
+                <div class="price-item">
+                    <div class="price-label">Market Value</div>
+                    <div class="price-value">${{ analysis_data.pricing_data.pricing_analysis.market_value }}</div>
+                </div>
+                <div class="price-item">
+                    <div class="price-label">Premium Price</div>
+                    <div class="price-value">${{ analysis_data.pricing_data.pricing_analysis.premium_price }}</div>
                 </div>
             </div>
+        </div>
 
-            <div class="timing-section">
-                <div class="section-title">
-                    <div class="timing-icon">💻</div>
-                    <span>Platform timing</span>
+        <!-- Analysis Card -->
+        <div class="analysis-card">
+            <div class="analysis-header">
+                <span style="font-size: 24px;">🔍</span>
+                <div class="analysis-title">Item Analysis</div>
+            </div>
+            
+            <div class="analysis-row">
+                <span class="analysis-label">Item</span>
+                <span class="analysis-value">{{ analysis_data.analysis_json.description|title }}</span>
+            </div>
+            
+            <div class="analysis-row">
+                <span class="analysis-label">Brand</span>
+                <span class="analysis-value">{{ analysis_data.analysis_json.brand|title }}</span>
+            </div>
+            
+            <div class="analysis-row">
+                <span class="analysis-label">Model</span>
+                <span class="analysis-value">{{ analysis_data.analysis_json.model|title }}</span>
+            </div>
+            
+            <div class="analysis-row">
+                <span class="analysis-label">Condition</span>
+                <span class="analysis-value">{{ analysis_data.analysis_json.condition_display }}</span>
+            </div>
+        </div>
+
+        <!-- Listing Card -->
+        <div class="listing-card">
+            <div class="listing-title">
+                <span>📝</span>
+                <span>Your Listing</span>
+            </div>
+            <div class="listing-text">{{ listing }}</div>
+            <button class="copy-button" onclick="copyListing()">Copy Listing</button>
+        </div>
+
+        <!-- Refine Section -->
+        <div class="refine-section">
+            <div class="refine-title">
+                <span>⚙️</span>
+                <span>Refine Analysis</span>
+            </div>
+            
+            <form method="POST" action="{{ url_for('refine_analysis') }}">
+                <div class="form-group">
+                    <label for="condition">Condition:</label>
+                    <select name="condition" id="condition">
+                        <option value="excellent" {% if analysis_data.analysis_json.condition == 'excellent' %}selected{% endif %}>Excellent</option>
+                        <option value="very_good" {% if analysis_data.analysis_json.condition == 'very_good' %}selected{% endif %}>Very Good</option>
+                        <option value="good" {% if analysis_data.analysis_json.condition == 'good' %}selected{% endif %}>Good</option>
+                        <option value="fair" {% if analysis_data.analysis_json.condition == 'fair' %}selected{% endif %}>Fair</option>
+                        <option value="poor" {% if analysis_data.analysis_json.condition == 'poor' %}selected{% endif %}>Poor</option>
+                    </select>
                 </div>
                 
-                <div class="timing-item">
-                    <div class="timing-icon">📘</div>
-                    <div class="timing-content">
-                        <div class="platform">Facebook Marketplace:</div>
-                        <div class="time">Sunday evenings (7-9 PM)</div>
-                    </div>
+                <div class="form-group">
+                    <label for="additional_notes">Additional Notes:</label>
+                    <textarea name="additional_notes" id="additional_notes" placeholder="Any additional details about the condition, damage, or special features..."></textarea>
                 </div>
-
-                <div class="timing-item">
-                    <div class="timing-icon">🌳</div>
-                    <div class="timing-content">
-                        <div class="platform">Gumtree:</div>
-                        <div class="time">Weekend afternoons (2-6 PM)</div>
-                    </div>
-                </div>
-
-                <div class="timing-item">
-                    <div class="timing-icon">🅱️</div>
-                    <div class="timing-content">
-                        <div class="platform">eBay:</div>
-                        <div class="time">Tuesday-Thursday (7-9 PM)</div>
-                    </div>
-                </div>
-
-                <div class="timing-item">
-                    <div class="timing-icon">⚫</div>
-                    <div class="timing-content">
-                        <div class="platform">General:</div>
-                        <div class="time">Weekend evenings (6-8 PM)</div>
-                    </div>
-                </div>
-            </div>
+                
+                <button type="submit" class="refine-button">Update Analysis</button>
+            </form>
         </div>
 
-        <!-- Analysis Section -->
-        <div class="card">
-            <div class="analysis-section">
-                <div style="display: flex; align-items: flex-start;">
-                    <div class="vertical-text">STRATEGY</div>
-                    <div style="flex: 1;">
-                        <div class="analysis-item">
-                            <div class="analysis-label">ITEM</div>
-                            <div class="analysis-value">{{ analysis_data.analysis_json.description if analysis_data and analysis_data.analysis_json else 'Item' }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; align-items: flex-start;">
-                    <div class="vertical-text">OPTIMAL</div>
-                    <div style="flex: 1;">
-                        <div class="analysis-item">
-                            <div class="analysis-label">BRAND</div>
-                            <div class="analysis-value">{{ analysis_data.analysis_json.brand if analysis_data and analysis_data.analysis_json else 'Unknown' }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; align-items: flex-start;">
-                    <div class="vertical-text">DIGITAL</div>
-                    <div style="flex: 1;">
-                        <div class="analysis-item">
-                            <div class="analysis-label">MODEL</div>
-                            <div class="analysis-value">{{ analysis_data.analysis_json.model if analysis_data and analysis_data.analysis_json else 'Unknown' }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; align-items: flex-start;">
-                    <div class="vertical-text">VERIFIED</div>
-                    <div style="flex: 1;">
-                        <div class="analysis-item">
-                            <div class="analysis-label">CONDITION</div>
-                            <div class="analysis-value">{{ analysis_data.analysis_json.condition if analysis_data and analysis_data.analysis_json else 'Good' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Listing Section -->
-        <div class="listing-section">
-            <div class="listing-title">Your listing</div>
-            <div class="listing-text">
-                {{ listing if listing else 'Your listing will appear here...' }}
-            </div>
-            <button class="copy-button" onclick="copyListing()">Copy listing</button>
-        </div>
-
-        <a href="/" class="back-button">Create Another Listing</a>
+        <button class="back-button" onclick="window.location.href='{{ url_for('index') }}'">Analyze Another Item</button>
     </div>
 
     <script>
         function copyListing() {
-            const listingText = document.querySelector('.listing-text').textContent;
-            navigator.clipboard.writeText(listingText).then(() => {
+            const listingText = `{{ listing|replace('"', '\\"')|replace('\n', '\\n')|replace('\r', '') }}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(listingText).then(() => {
+                    const button = document.querySelector('.copy-button');
+                    const originalText = button.textContent;
+                    button.textContent = '✅ Copied!';
+                    button.style.background = 'rgba(255,255,255,0.4)';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = 'rgba(255,255,255,0.2)';
+                    }, 2000);
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = listingText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
                 const button = document.querySelector('.copy-button');
                 const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                button.style.background = '#38a169';
+                button.textContent = '✅ Copied!';
                 setTimeout(() => {
                     button.textContent = originalText;
-                    button.style.background = '#c53030';
                 }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-            });
+            }
         }
     </script>
 </body>
