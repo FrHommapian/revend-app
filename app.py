@@ -13,6 +13,7 @@ import time
 import requests
 from textblob import TextBlob
 import numpy as np
+import random
 
 load_dotenv()
 
@@ -75,22 +76,23 @@ Return JSON: {
     "condition_impact": "how condition affects value"
 }""",
             
-            "pricing": """You are a pricing expert for Australian second-hand markets. 
+            "listing": """You are helping someone create a genuine, personal marketplace listing. 
 
-Based on this item, provide realistic Australian market pricing considering:
-- Current market demand
-- Depreciation from retail
-- Condition impact
-- Brand positioning
-- Seasonal factors
-- Competition analysis
+Create a heartfelt, personal story about selling this item. Include:
+- Why you originally bought it
+- Personal memories or experiences with it
+- Why you're reluctantly selling it now
+- What you'll miss about it
+- Care and maintenance details
+- Why it deserves a good home
+
+Write as a real person, not a business. Make it emotional and genuine - like someone who truly cared about this item.
 
 Return JSON: {
-    "quick_sale_price": "conservative price for fast sale",
-    "market_value": "realistic market value",
-    "premium_price": "optimistic but achievable price",
-    "pricing_confidence": "high/medium/low",
-    "market_analysis": "brief market context"
+    "personal_story": "the emotional backstory",
+    "reason_for_selling": "why parting with it",
+    "care_details": "how it was maintained",
+    "ideal_buyer": "who would appreciate it"
 }"""
         }
         
@@ -114,7 +116,7 @@ Return JSON: {
                 }
             ],
             'max_tokens': 800,
-            'temperature': 0.1
+            'temperature': 0.3
         }
         
         response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload, timeout=45)
@@ -159,6 +161,17 @@ def search_market_data(brand, item_type, model):
     except Exception as e:
         logger.error(f"Market research failed: {e}")
         return []
+
+def format_condition_display(condition):
+    """Format condition for professional display"""
+    condition_map = {
+        'excellent': 'Excellent',
+        'very_good': 'Very Good',
+        'good': 'Good',
+        'fair': 'Fair',
+        'poor': 'Poor'
+    }
+    return condition_map.get(condition, condition.title())
 
 class IntelligentPricingEngine:
     def __init__(self):
@@ -489,6 +502,10 @@ def analyze_item_photo(image_file):
         logger.info("💰 Stage 4: Dynamic pricing calculation...")
         pricing_data = pricing_engine.generate_dynamic_pricing(analysis_results)
         
+        # Stage 5: Personal listing generation
+        logger.info("📝 Stage 5: Personal listing generation...")
+        personal_listing = call_openai_api(img_base64, "listing")
+        
         # Build comprehensive result
         item_info = {
             'brand': analysis_results.get('brand', 'unknown'),
@@ -496,6 +513,7 @@ def analyze_item_photo(image_file):
             'category': analysis_results.get('category', 'electronics'),
             'description': analysis_results.get('item_type', 'item'),
             'condition': analysis_results.get('condition', 'good'),
+            'condition_display': format_condition_display(analysis_results.get('condition', 'good')),
             'session_id': session_id,
             'image_hash': image_hash
         }
@@ -506,7 +524,7 @@ def analyze_item_photo(image_file):
         logger.info(f"   Brand: {item_info['brand']}")
         logger.info(f"   Item: {item_info['description']}")
         logger.info(f"   Category: {item_info['category']}")
-        logger.info(f"   Condition: {item_info['condition']}")
+        logger.info(f"   Condition: {item_info['condition_display']}")
         logger.info(f"   Price: ${pricing_data['pricing_analysis']['market_value']}")
         logger.info(f"   Confidence: {pricing_data['pricing_analysis']['confidence']}")
         
@@ -517,6 +535,7 @@ def analyze_item_photo(image_file):
             'analysis_json': item_info,
             'pricing_data': pricing_data,
             'ai_analysis_data': analysis_results,
+            'personal_listing_data': personal_listing,
             'image_hash': image_hash,
             'session_id': session_id,
             'specific_item': item_info['description'],
@@ -581,43 +600,64 @@ def extract_analysis_manually(text):
             'confidence_level': 'low'
         }
 
-def generate_category_listing(analysis_data):
-    """Generate intelligent listing based on comprehensive analysis"""
-    analysis_json = analysis_data.get('analysis_json', {})
-    pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
-    ai_analysis = analysis_data.get('ai_analysis_data', {})
-    
-    brand = analysis_json.get('brand', 'Unknown')
-    model = analysis_json.get('model', 'Unknown')
-    specific_item = analysis_data.get('specific_item', 'item')
-    condition = analysis_json.get('condition', 'good')
-    market_value = pricing_analysis.get('market_value', 100)
-    
-    # Get additional context from AI analysis
-    market_notes = ai_analysis.get('market_notes', '')
-    price_factors = ai_analysis.get('price_factors', [])
-    
-    logger.info(f"📝 INTELLIGENT LISTING: {brand} {model} {specific_item} - ${market_value}")
-    
-    # Generate contextual listing
-    brand_text = f" {brand}" if brand != 'Unknown' and brand != 'unknown' else ""
-    model_text = f" {model}" if model != 'Unknown' and model != 'unknown' else ""
-    
-    listing = f"I'm selling my{brand_text}{model_text} {specific_item} in {condition} condition for ${market_value}. "
-    
-    # Add AI-generated context
-    if market_notes:
-        listing += f"{market_notes[:100]}... "
-    
-    listing += f"This item has been well-maintained and is ready for a new owner. "
-    
-    # Add price factors if available
-    if price_factors:
-        listing += f"Key features: {', '.join(price_factors[:3])}. "
-    
-    listing += f"It's a great opportunity to get a quality {specific_item} at a fair market price. Please feel free to contact me if you have any questions or would like to arrange a viewing. Serious buyers only, please. Located in Australia with flexible pickup arrangements available."
-    
-    return listing
+def generate_personal_listing(analysis_data):
+    """Generate highly personal, emotional listing"""
+    try:
+        analysis_json = analysis_data.get('analysis_json', {})
+        pricing_analysis = analysis_data.get('pricing_data', {}).get('pricing_analysis', {})
+        personal_listing_data = analysis_data.get('personal_listing_data', '')
+        
+        brand = analysis_json.get('brand', 'Unknown')
+        model = analysis_json.get('model', 'Unknown')
+        specific_item = analysis_data.get('specific_item', 'item')
+        condition = analysis_json.get('condition_display', 'Good')
+        market_value = pricing_analysis.get('market_value', 100)
+        
+        # Try to parse AI-generated personal story
+        personal_story = None
+        if personal_listing_data:
+            try:
+                clean_text = re.sub(r'```json\s*', '', personal_listing_data)
+                clean_text = re.sub(r'```\s*', '', clean_text)
+                personal_data = json.loads(clean_text)
+                personal_story = personal_data.get('personal_story', '')
+            except:
+                pass
+        
+        # Generate personal listing templates
+        personal_templates = [
+            f"I'm reluctantly selling my beloved {brand} {specific_item} that has been with me through so many special moments. I originally bought this beautiful piece because I fell in love with its craftsmanship and elegance. It's been my go-to companion for important meetings, special dinners, and memorable occasions. The {condition.lower()} condition reflects how much I've treasured and cared for it. I'm only parting with it because I'm moving overseas and need to downsize my collection. This deserves to go to someone who will appreciate its quality and beauty as much as I have. Asking ${market_value} for this treasured piece.",
+            
+            f"After much thought, I've decided to part with my stunning {brand} {specific_item}. This isn't just any ordinary {specific_item} - it's been my trusted companion for over two years. I remember the day I bought it; I had been saving up for months because I knew this was 'the one'. The quality is exceptional, and despite regular use, it's maintained its {condition.lower()} condition because I've always treated it with care. Life changes are forcing me to simplify, and while it breaks my heart to let this go, I hope it finds a new home with someone who will love it as much as I do. ${market_value} for this beauty.",
+            
+            f"This {brand} {specific_item} has been more than just an accessory to me - it's been part of my identity. I bought it during a particularly meaningful time in my life, and it's accompanied me through promotions, celebrations, and countless everyday moments. The {condition.lower()} condition speaks to how well I've maintained it, always storing it properly and treating it with the respect it deserves. I'm selling because I'm decluttering before a big move, but honestly, this is one of the hardest pieces to let go. Looking for someone who understands quality and will give this the love it deserves. ${market_value} firm."
+        ]
+        
+        # Use AI-generated story if available, otherwise use template
+        if personal_story and len(personal_story) > 50:
+            # Clean up AI story and add pricing
+            clean_story = re.sub(r'[^\w\s\.,!?;:()\'-]', '', personal_story)
+            listing = f"{clean_story} I'm asking ${market_value} for this special piece."
+        else:
+            listing = random.choice(personal_templates)
+        
+        # Clean up any formatting issues
+        listing = re.sub(r'\s+', ' ', listing)  # Remove extra spaces
+        listing = re.sub(r'[^\w\s\.,!?;:()\'-]', '', listing)  # Remove weird characters
+        listing = listing.strip()
+        
+        # Ensure proper ending
+        if not listing.endswith('.'):
+            listing += '.'
+        
+        logger.info(f"📝 PERSONAL LISTING GENERATED: {len(listing)} characters")
+        
+        return listing
+        
+    except Exception as e:
+        logger.error(f"Personal listing generation failed: {e}")
+        # Simple fallback
+        return f"I'm selling my {brand} {specific_item} in {condition.lower()} condition for ${market_value}. This has been a cherished piece in my collection, and I'm only parting with it due to changing circumstances. It's been well-maintained and deserves a new home with someone who will appreciate its quality. Please contact me if you're interested."
 
 @app.route('/')
 def index():
@@ -639,7 +679,7 @@ def analyze():
             return redirect(url_for('index'))
         
         session['current_analysis'] = analysis_data
-        listing = generate_category_listing(analysis_data)
+        listing = generate_personal_listing(analysis_data)
         
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
@@ -692,12 +732,13 @@ def refine_analysis():
         # Update analysis
         updated_analysis = original_analysis.copy()
         updated_analysis['analysis_json']['condition'] = condition
+        updated_analysis['analysis_json']['condition_display'] = format_condition_display(condition)
         updated_analysis['pricing_data']['pricing_analysis']['market_value'] = new_market_value
         updated_analysis['pricing_data']['pricing_analysis']['quick_sale'] = round(adjusted_price * 0.8)
         updated_analysis['pricing_data']['pricing_analysis']['premium_price'] = round(adjusted_price * 1.2)
         
         session['current_analysis'] = updated_analysis
-        updated_listing = generate_category_listing(updated_analysis)
+        updated_listing = generate_personal_listing(updated_analysis)
         
         logger.info(f"💰 INTELLIGENT ADJUSTMENT: ${original_price} → ${new_market_value}")
         logger.info(f"📊 Factors: condition={condition}, damage={damage_multiplier}, positive={positive_multiplier}")
