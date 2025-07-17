@@ -13,110 +13,92 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f5f5f5;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         /* Price Range Card */
         .price-range-card {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            color: white;
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
         }
 
         .price-range-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            color: #333;
         }
 
         .price-range-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
         .price-item {
-            background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
             text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .price-item:hover {
-            transform: translateY(-2px);
-            background: rgba(255,255,255,0.3);
+            border: 1px solid #e9ecef;
         }
 
         .price-label {
             font-size: 11px;
-            opacity: 0.9;
+            color: #666;
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .price-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
+            color: #333;
         }
 
         /* Analysis Card */
         .analysis-card {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            position: relative;
         }
 
         .analysis-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f8f9fa;
+            margin-bottom: 15px;
         }
 
         .analysis-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #333;
-            margin-left: 12px;
+            margin-left: 10px;
         }
 
         .analysis-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #f0f0f0;
         }
 
@@ -128,7 +110,7 @@
             font-weight: 600;
             color: #666;
             text-transform: uppercase;
-            font-size: 13px;
+            font-size: 14px;
             letter-spacing: 0.5px;
         }
 
@@ -141,23 +123,18 @@
 
         /* Listing Card */
         .listing-card {
-            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
+            background: #dc3545;
+            border-radius: 12px;
+            padding: 20px;
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .listing-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .listing-text {
@@ -169,10 +146,10 @@
         .copy-button {
             width: 100%;
             background: rgba(255,255,255,0.2);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
             color: white;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -181,66 +158,19 @@
 
         .copy-button:hover {
             background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
         }
 
-        /* Refine Section */
-        .refine-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid #e9ecef;
+        .copy-button:active {
+            transform: scale(0.98);
         }
 
-        .refine-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-
-        select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 90px;
-            font-family: inherit;
-        }
-
-        .refine-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Back Button */
+        .back-button {
+            background: #6c757d;
             color: white;
             border: none;
-            padding: 15px 20px;
-            border-radius: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -248,55 +178,31 @@
             transition: all 0.3s ease;
         }
 
-        .refine-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .back-button {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-
         .back-button:hover {
             background: #5a6268;
-            transform: translateY(-2px);
         }
 
         /* Success indicator */
         .updated-indicator {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #28a745;
             color: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
         }
 
         /* Responsive adjustments */
         @media (max-width: 480px) {
             .container {
-                padding: 20px;
+                padding: 10px;
                 margin: 10px;
             }
             
             .price-range-grid {
                 grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            
-            .price-item {
-                padding: 12px;
+                gap: 8px;
             }
             
             .analysis-row {
@@ -313,8 +219,6 @@
 </head>
 <body>
     <div class="container">
-        <h1>Analysis Results</h1>
-        
         {% if updated %}
         <div class="updated-indicator">
             ✅ Analysis Updated Successfully!
@@ -323,10 +227,7 @@
 
         <!-- Price Range Card -->
         <div class="price-range-card">
-            <div class="price-range-title">
-                <span>💰</span>
-                <span>Pricing Range</span>
-            </div>
+            <div class="price-range-title">💰 Pricing Range</div>
             <div class="price-range-grid">
                 <div class="price-item">
                     <div class="price-label">Quick Sale</div>
@@ -373,40 +274,9 @@
 
         <!-- Listing Card -->
         <div class="listing-card">
-            <div class="listing-title">
-                <span>📝</span>
-                <span>Your Listing</span>
-            </div>
+            <div class="listing-title">Your listing</div>
             <div class="listing-text">{{ listing }}</div>
-            <button class="copy-button" onclick="copyListing()">Copy Listing</button>
-        </div>
-
-        <!-- Refine Section -->
-        <div class="refine-section">
-            <div class="refine-title">
-                <span>⚙️</span>
-                <span>Refine Analysis</span>
-            </div>
-            
-            <form method="POST" action="{{ url_for('refine_analysis') }}">
-                <div class="form-group">
-                    <label for="condition">Condition:</label>
-                    <select name="condition" id="condition">
-                        <option value="excellent" {% if analysis_data.analysis_json.condition == 'excellent' %}selected{% endif %}>Excellent</option>
-                        <option value="very_good" {% if analysis_data.analysis_json.condition == 'very_good' %}selected{% endif %}>Very Good</option>
-                        <option value="good" {% if analysis_data.analysis_json.condition == 'good' %}selected{% endif %}>Good</option>
-                        <option value="fair" {% if analysis_data.analysis_json.condition == 'fair' %}selected{% endif %}>Fair</option>
-                        <option value="poor" {% if analysis_data.analysis_json.condition == 'poor' %}selected{% endif %}>Poor</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="additional_notes">Additional Notes:</label>
-                    <textarea name="additional_notes" id="additional_notes" placeholder="Any additional details about the condition, damage, or special features..."></textarea>
-                </div>
-                
-                <button type="submit" class="refine-button">Update Analysis</button>
-            </form>
+            <button class="copy-button" onclick="copyListing()">Copy listing</button>
         </div>
 
         <button class="back-button" onclick="window.location.href='{{ url_for('index') }}'">Analyze Another Item</button>
@@ -420,7 +290,7 @@
                 navigator.clipboard.writeText(listingText).then(() => {
                     const button = document.querySelector('.copy-button');
                     const originalText = button.textContent;
-                    button.textContent = '✅ Copied!';
+                    button.textContent = 'Copied!';
                     button.style.background = 'rgba(255,255,255,0.4)';
                     
                     setTimeout(() => {
@@ -439,7 +309,7 @@
                 
                 const button = document.querySelector('.copy-button');
                 const originalText = button.textContent;
-                button.textContent = '✅ Copied!';
+                button.textContent = 'Copied!';
                 setTimeout(() => {
                     button.textContent = originalText;
                 }, 2000);
