@@ -10,7 +10,6 @@ import io
 import re
 import hashlib
 import time
-from pricing_engine import RealPricingEngine
 
 load_dotenv()
 
@@ -21,7 +20,7 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    """Nuclear OpenAI client fix - handles all versions"""
+    """Ultimate OpenAI client with old version fallback"""
     try:
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
@@ -30,80 +29,137 @@ def get_openai_client():
         
         logger.info(f"🔑 API Key found: {api_key[:12]}...")
         
-        # Import OpenAI inside function to avoid import issues
+        # Try new version first
         try:
             from openai import OpenAI
-            
-            # Try different initialization methods
-            initialization_methods = [
-                lambda: OpenAI(api_key=api_key),
-                lambda: OpenAI(api_key=api_key, base_url="https://api.openai.com/v1"),
-                lambda: OpenAI(api_key=api_key, timeout=30),
-            ]
-            
-            for method in initialization_methods:
-                try:
-                    client = method()
-                    logger.info("✅ OpenAI client initialized successfully!")
-                    return client
-                except Exception as e:
-                    logger.warning(f"Initialization method failed: {e}")
-                    continue
-            
-            logger.error("❌ All OpenAI initialization methods failed")
-            return None
-            
-        except ImportError:
-            logger.error("❌ OpenAI library not available")
-            return None
+            client = OpenAI(api_key=api_key)
+            logger.info("✅ OpenAI v1+ client working!")
+            return client
+        except:
+            pass
+        
+        # Try old version
+        try:
+            import openai
+            openai.api_key = api_key
+            logger.info("✅ OpenAI v0.28 client working!")
+            return openai
+        except:
+            pass
+        
+        logger.error("❌ All OpenAI versions failed")
+        return None
         
     except Exception as e:
         logger.error(f"❌ OpenAI client error: {e}")
         return None
 
-# Enhanced pricing engine with better fallback
-class EnhancedPricingEngine:
+def detect_brand_from_filename(filename):
+    """Detect brand from filename"""
+    filename_lower = filename.lower()
+    
+    luxury_brands = {
+        'prada': 2500,
+        'gucci': 2000,
+        'chanel': 3000,
+        'louis': 2800,  # Louis Vuitton
+        'hermes': 8000,
+        'dior': 2200,
+        'versace': 1800,
+        'rolex': 12000,
+        'omega': 4000
+    }
+    
+    for brand, price in luxury_brands.items():
+        if brand in filename_lower:
+            logger.info(f"🎯 BRAND DETECTED FROM FILENAME: {brand} → ${price}")
+            return brand, price
+    
+    return None, None
+
+def detect_item_type(filename):
+    """Detect item type from filename"""
+    filename_lower = filename.lower()
+    
+    if any(word in filename_lower for word in ['bag', 'handbag', 'purse', 'clutch', 'tote']):
+        return 'handbag', 'fashion_beauty'
+    elif any(word in filename_lower for word in ['watch', 'rolex', 'omega']):
+        return 'watch', 'fashion_beauty'
+    elif any(word in filename_lower for word in ['phone', 'iphone', 'samsung']):
+        return 'smartphone', 'electronics'
+    elif any(word in filename_lower for word in ['laptop', 'macbook', 'computer']):
+        return 'laptop', 'electronics'
+    else:
+        return 'item', 'electronics'
+
+# Ultimate pricing engine with manual brand detection
+class UltimatePricingEngine:
     def __init__(self):
         self.luxury_brands = {
-            'prada': {'base': 2500, 'multiplier': 1.8},
-            'gucci': {'base': 2000, 'multiplier': 1.6},
-            'chanel': {'base': 3000, 'multiplier': 2.0},
-            'louis vuitton': {'base': 2800, 'multiplier': 1.9},
-            'hermes': {'base': 8000, 'multiplier': 3.0},
-            'rolex': {'base': 12000, 'multiplier': 4.0},
-            'omega': {'base': 4000, 'multiplier': 2.5}
+            'prada': {'handbag': 2500, 'wallet': 800, 'shoes': 1200},
+            'gucci': {'handbag': 2000, 'wallet': 600, 'shoes': 1000},
+            'chanel': {'handbag': 3000, 'wallet': 1200, 'shoes': 1500},
+            'louis vuitton': {'handbag': 2800, 'wallet': 900, 'shoes': 1300},
+            'hermes': {'handbag': 8000, 'wallet': 2000, 'shoes': 3000},
+            'dior': {'handbag': 2200, 'wallet': 700, 'shoes': 1100},
+            'versace': {'handbag': 1800, 'wallet': 600, 'shoes': 900},
+            'rolex': {'watch': 12000},
+            'omega': {'watch': 4000}
         }
         
         self.premium_brands = {
-            'apple': {'base': 800, 'multiplier': 1.4},
-            'samsung': {'base': 600, 'multiplier': 1.2},
-            'sony': {'base': 400, 'multiplier': 1.1},
-            'nike': {'base': 150, 'multiplier': 1.2},
-            'adidas': {'base': 130, 'multiplier': 1.1}
+            'apple': {'phone': 1200, 'laptop': 2000, 'tablet': 800},
+            'samsung': {'phone': 900, 'laptop': 1200, 'tablet': 600},
+            'sony': {'camera': 1500, 'headphones': 300, 'tv': 1200},
+            'nike': {'shoes': 180, 'clothing': 80},
+            'adidas': {'shoes': 160, 'clothing': 70}
         }
         
         self.category_bases = {
             'electronics': 200,
-            'fashion_beauty': 120,
+            'fashion_beauty': 150,
             'vehicles': 25000,
             'home_garden': 180,
             'baby_kids': 80
         }
     
-    def analyze_comprehensive_pricing(self, item_info):
+    def analyze_comprehensive_pricing(self, item_info, filename=None):
         brand = item_info.get('brand', 'unknown').lower()
         category = item_info.get('category', 'electronics')
         condition = item_info.get('condition', 'good')
+        description = item_info.get('description', 'item').lower()
+        
+        # Manual brand detection from filename
+        if filename:
+            detected_brand, detected_price = detect_brand_from_filename(filename)
+            if detected_brand:
+                brand = detected_brand
+                item_info['brand'] = detected_brand
+        
+        # Determine item type
+        item_type = 'item'
+        if 'handbag' in description or 'bag' in description:
+            item_type = 'handbag'
+        elif 'watch' in description:
+            item_type = 'watch'
+        elif 'phone' in description:
+            item_type = 'phone'
+        elif 'laptop' in description:
+            item_type = 'laptop'
+        elif 'shoes' in description:
+            item_type = 'shoes'
         
         # Check luxury brands first
         if brand in self.luxury_brands:
-            base_price = self.luxury_brands[brand]['base']
-            logger.info(f"💎 LUXURY BRAND DETECTED: {brand} → ${base_price}")
+            brand_data = self.luxury_brands[brand]
+            base_price = brand_data.get(item_type, brand_data.get('handbag', 2000))
+            logger.info(f"💎 LUXURY BRAND: {brand} {item_type} → ${base_price}")
         elif brand in self.premium_brands:
-            base_price = self.premium_brands[brand]['base']
-            logger.info(f"⭐ PREMIUM BRAND DETECTED: {brand} → ${base_price}")
+            brand_data = self.premium_brands[brand]
+            base_price = brand_data.get(item_type, brand_data.get('phone', 500))
+            logger.info(f"⭐ PREMIUM BRAND: {brand} {item_type} → ${base_price}")
         else:
-            base_price = self.category_bases.get(category, 100)
+            base_price = self.category_bases.get(category, 150)
             logger.info(f"📊 CATEGORY BASE: {category} → ${base_price}")
         
         # Condition adjustments
@@ -118,7 +174,7 @@ class EnhancedPricingEngine:
         multiplier = condition_multipliers.get(condition, 0.85)
         final_price = base_price * multiplier
         
-        logger.info(f"💰 ENHANCED PRICING: ${base_price} × {multiplier} = ${final_price}")
+        logger.info(f"💰 FINAL PRICING: ${base_price} × {multiplier} = ${final_price}")
         
         return {
             'pricing_analysis': {
@@ -129,12 +185,12 @@ class EnhancedPricingEngine:
                 'range_max': round(final_price * 1.15, 0),
                 'average': round(final_price, 0),
                 'confidence': 'high',
-                'pricing_source': 'enhanced_engine'
+                'pricing_source': 'ultimate_engine'
             },
-            'sources': [{'source': 'Enhanced Pricing Engine', 'confidence': 'high'}]
+            'sources': [{'source': 'Ultimate Pricing Engine', 'confidence': 'high'}]
         }
 
-pricing_engine = EnhancedPricingEngine()
+pricing_engine = UltimatePricingEngine()
 
 MARKETPLACE_CATEGORIES = {
     "electronics": {
@@ -179,91 +235,10 @@ MARKETPLACE_CATEGORIES = {
     }
 }
 
-def detect_brand_from_image_data(image_data):
-    """Detect brand from image data without OpenAI"""
-    # Simple brand detection based on filename or basic analysis
-    luxury_brands = ['prada', 'gucci', 'chanel', 'louis vuitton', 'hermes', 'rolex', 'omega']
-    premium_brands = ['apple', 'samsung', 'sony', 'nike', 'adidas']
-    
-    # This is a placeholder - in real implementation you'd use computer vision
-    # For now, return unknown but the enhanced pricing engine will handle it
-    return 'unknown'
-
-def bulletproof_category_detection(specific_item, brand, analysis_notes):
-    all_text = f"{specific_item} {brand} {analysis_notes}".lower()
-    
-    if any(keyword in all_text for keyword in ['phone', 'laptop', 'computer', 'tablet', 'camera', 'headphones', 'speaker', 'console']):
-        return 'electronics'
-    
-    if any(keyword in all_text for keyword in ['dress', 'bag', 'handbag', 'shoes', 'jewelry', 'watch', 'perfume', 'cologne', 'fragrance']):
-        return 'fashion_beauty'
-    
-    if any(keyword in all_text for keyword in ['car', 'truck', 'van', 'vehicle', 'motorcycle', 'bike', 'boat']):
-        return 'vehicles'
-    
-    if any(keyword in all_text for keyword in ['furniture', 'sofa', 'table', 'chair', 'appliance', 'tool']):
-        return 'home_garden'
-    
-    if any(keyword in all_text for keyword in ['toy', 'baby', 'kids', 'children', 'stroller', 'crib']):
-        return 'baby_kids'
-    
-    return 'electronics'
-
-def extract_price_from_ai_estimate(estimated_value):
-    try:
-        if not estimated_value:
-            return None
-        
-        patterns = [
-            r'(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:AUD|USD|\$)',
-            r'(\d+(?:,\d{3})*(?:\.\d{2})?)'
-        ]
-        
-        for pattern in patterns:
-            matches = re.findall(pattern, estimated_value, re.IGNORECASE)
-            for match in matches:
-                try:
-                    price = float(match.replace(',', ''))
-                    if 10 <= price <= 500000:
-                        return price
-                except:
-                    continue
-        return None
-    except:
-        return None
-
-def create_ai_priority_pricing(ai_estimated_value, brand, model, condition, fallback_pricing):
-    ai_price = extract_price_from_ai_estimate(ai_estimated_value)
-    
-    if ai_price and ai_price > 0:
-        logger.info(f"🎯 USING AI ESTIMATE: ${ai_price}")
-        
-        return {
-            'pricing_analysis': {
-                'quick_sale': round(ai_price * 0.85, 0),
-                'market_value': ai_price,
-                'premium_price': round(ai_price * 1.15, 0),
-                'range_min': round(ai_price * 0.85, 0),
-                'range_max': round(ai_price * 1.15, 0),
-                'average': ai_price,
-                'confidence': 'high',
-                'pricing_source': 'ai_visual_estimate'
-            },
-            'sources': [{'source': f'AI Analysis ({brand} {model})', 'confidence': 'high'}],
-            'ai_estimate_used': True
-        }
-    else:
-        logger.warning(f"⚠️ USING ENHANCED FALLBACK PRICING")
-        return fallback_pricing
-
-def clean_json_response(response_text):
-    cleaned = re.sub(r'```json\s*', '', response_text)
-    cleaned = re.sub(r'```\s*', '', cleaned)
-    return cleaned.strip()
-
 def analyze_item_photo(image_file):
     try:
         session_id = f"{int(time.time())}-{os.urandom(4).hex()}"
+        filename = image_file.filename or 'unknown'
         
         image_file.seek(0)
         image_content = image_file.read()
@@ -271,6 +246,11 @@ def analyze_item_photo(image_file):
         image_file.seek(0)
         
         logger.info(f"=== NEW ANALYSIS SESSION {session_id} ===")
+        logger.info(f"📁 Filename: {filename}")
+        
+        # Detect brand and item type from filename
+        detected_brand, detected_price = detect_brand_from_filename(filename)
+        item_type, category = detect_item_type(filename)
         
         image = Image.open(image_file)
         buffered = io.BytesIO()
@@ -279,126 +259,133 @@ def analyze_item_photo(image_file):
         
         client = get_openai_client()
         
+        # Try OpenAI analysis
         if client:
             try:
-                # Category analysis
-                category_response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": "Analyze this image. What is the main item? Return JSON: {\"primary_category\": \"electronics/fashion_beauty/vehicles/home_garden/baby_kids\", \"specific_item\": \"item name\", \"brand\": \"brand name\"}"
-                                },
-                                {
-                                    "type": "image_url", 
-                                    "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                                }
-                            ]
-                        }
-                    ],
-                    max_tokens=200,
-                    temperature=0.1
-                )
+                # Handle both old and new OpenAI versions
+                if hasattr(client, 'chat'):
+                    # New version
+                    response = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": f"Analyze this image. What brand and item is this? Return JSON: {{\"brand\": \"brand name\", \"item\": \"item type\", \"category\": \"fashion_beauty/electronics/vehicles/home_garden/baby_kids\", \"condition\": \"excellent/very_good/good/fair/poor\", \"estimated_value\": \"XXX AUD\"}}"
+                                    },
+                                    {
+                                        "type": "image_url", 
+                                        "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens=300,
+                        temperature=0.1
+                    )
+                    
+                    analysis_text = response.choices[0].message.content
+                    
+                else:
+                    # Old version
+                    response = client.ChatCompletion.create(
+                        model="gpt-4-vision-preview",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": f"Analyze this image. What brand and item is this? Return JSON: {{\"brand\": \"brand name\", \"item\": \"item type\", \"category\": \"fashion_beauty/electronics/vehicles/home_garden/baby_kids\", \"condition\": \"excellent/very_good/good/fair/poor\", \"estimated_value\": \"XXX AUD\"}}"
+                                    },
+                                    {
+                                        "type": "image_url", 
+                                        "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens=300,
+                        temperature=0.1
+                    )
+                    
+                    analysis_text = response.choices[0].message.content
                 
-                category_text = clean_json_response(category_response.choices[0].message.content)
-                
-                try:
-                    category_data = json.loads(category_text)
-                    ai_suggested_category = category_data.get('primary_category', 'electronics')
-                    specific_item = category_data.get('specific_item', 'item')
-                    brand = category_data.get('brand', 'unknown')
-                except:
-                    ai_suggested_category = 'electronics'
-                    specific_item = 'item'
-                    brand = 'unknown'
-                
-                # Detailed analysis
-                analysis_response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": f"Analyze this {specific_item} for Australian pricing. Return JSON: {{\"brand\": \"exact brand\", \"model\": \"exact model\", \"condition\": \"excellent/very_good/good/fair/poor\", \"estimated_value\": \"XXX AUD\", \"analysis_notes\": \"description\"}}"
-                                },
-                                {
-                                    "type": "image_url", 
-                                    "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                                }
-                            ]
-                        }
-                    ],
-                    max_tokens=500,
-                    temperature=0.1
-                )
-                
-                analysis_text = clean_json_response(analysis_response.choices[0].message.content)
-                
+                # Parse AI response
                 try:
                     analysis_json = json.loads(analysis_text)
-                    brand = analysis_json.get('brand', brand)
-                    model = analysis_json.get('model', 'unknown')
+                    brand = analysis_json.get('brand', detected_brand or 'unknown')
+                    specific_item = analysis_json.get('item', item_type)
+                    ai_category = analysis_json.get('category', category)
                     condition = analysis_json.get('condition', 'good')
                     ai_estimated_value = analysis_json.get('estimated_value', 'unknown')
-                    analysis_notes = analysis_json.get('analysis_notes', '')
-                except:
-                    model = 'unknown'
+                    
+                    logger.info(f"🎯 AI SUCCESS: {brand} {specific_item} → {ai_estimated_value}")
+                    
+                except Exception as e:
+                    logger.error(f"AI parsing error: {e}")
+                    brand = detected_brand or 'unknown'
+                    specific_item = item_type
+                    ai_category = category
                     condition = 'good'
                     ai_estimated_value = 'unknown'
-                    analysis_notes = ''
-                
-                logger.info(f"🎯 AI ANALYSIS SUCCESS: {brand} {model} {specific_item}")
+                    analysis_text = f"AI analysis failed: {e}"
                 
             except Exception as e:
                 logger.error(f"❌ OpenAI API call failed: {e}")
                 client = None
-                
+        
+        # Fallback to manual detection
         if not client:
-            logger.error("❌ OpenAI client unavailable - using enhanced fallback")
-            
-            # Enhanced fallback analysis
-            brand = detect_brand_from_image_data(image_content)
-            specific_item = 'item'
-            ai_suggested_category = 'electronics'
-            model = 'unknown'
+            logger.info("🔧 Using manual detection")
+            brand = detected_brand or 'unknown'
+            specific_item = item_type
+            ai_category = category
             condition = 'good'
             ai_estimated_value = 'unknown'
-            analysis_notes = 'OpenAI unavailable - using enhanced fallback'
-            analysis_text = analysis_notes
+            analysis_text = f"Manual detection: {brand} {specific_item}"
         
-        corrected_category = bulletproof_category_detection(specific_item, brand, analysis_notes)
-        
+        # Create item info
         item_info = {
             'brand': brand,
-            'model': model,
-            'category': corrected_category,
+            'model': 'unknown',
+            'category': ai_category,
             'description': specific_item,
             'condition': condition,
             'session_id': session_id,
             'image_hash': image_hash
         }
         
-        fallback_pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info)
-        final_pricing_data = create_ai_priority_pricing(ai_estimated_value, brand, model, condition, fallback_pricing_data)
+        # Get pricing
+        pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info, filename)
         
-        category_info = MARKETPLACE_CATEGORIES.get(corrected_category, MARKETPLACE_CATEGORIES['electronics'])
+        # Check if AI gave us a price
+        if ai_estimated_value and ai_estimated_value != 'unknown':
+            try:
+                ai_price = float(re.findall(r'(\d+)', ai_estimated_value)[0])
+                if ai_price > 0:
+                    pricing_data['pricing_analysis']['market_value'] = ai_price
+                    pricing_data['pricing_analysis']['quick_sale'] = round(ai_price * 0.85, 0)
+                    pricing_data['pricing_analysis']['premium_price'] = round(ai_price * 1.15, 0)
+                    logger.info(f"🎯 USING AI PRICE: ${ai_price}")
+            except:
+                pass
+        
+        category_info = MARKETPLACE_CATEGORIES.get(ai_category, MARKETPLACE_CATEGORIES['electronics'])
         
         return {
-            'category': corrected_category,
+            'category': ai_category,
             'category_info': category_info,
             'analysis': analysis_text,
             'analysis_json': item_info,
-            'pricing_data': final_pricing_data,
+            'pricing_data': pricing_data,
             'image_hash': image_hash,
             'session_id': session_id,
             'specific_item': specific_item,
-            'ai_suggested_category': ai_suggested_category,
-            'corrected_category': corrected_category,
+            'ai_suggested_category': ai_category,
+            'corrected_category': ai_category,
             'ai_estimated_value': ai_estimated_value
         }
         
