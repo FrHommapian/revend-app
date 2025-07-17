@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import logging
 from dotenv import load_dotenv
+from openai import OpenAI
 from PIL import Image
 import io
 import re
@@ -20,149 +21,98 @@ app = Flask(__name__)
 app.secret_key = f'revend-secret-key-{int(time.time())}'
 
 def get_openai_client():
-    """Ultimate OpenAI client with old version fallback"""
+    """Working OpenAI client with correct model"""
     try:
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            logger.error("❌ OPENAI_API_KEY not found")
             return None
         
-        logger.info(f"🔑 API Key found: {api_key[:12]}...")
-        
-        # Try new version first
-        try:
-            from openai import OpenAI
-            client = OpenAI(api_key=api_key)
-            logger.info("✅ OpenAI v1+ client working!")
-            return client
-        except:
-            pass
-        
-        # Try old version
-        try:
-            import openai
-            openai.api_key = api_key
-            logger.info("✅ OpenAI v0.28 client working!")
-            return openai
-        except:
-            pass
-        
-        logger.error("❌ All OpenAI versions failed")
-        return None
-        
+        client = OpenAI(api_key=api_key)
+        return client
     except Exception as e:
-        logger.error(f"❌ OpenAI client error: {e}")
+        logger.error(f"OpenAI client failed: {e}")
         return None
 
-def detect_brand_from_filename(filename):
-    """Detect brand from filename"""
-    filename_lower = filename.lower()
-    
-    luxury_brands = {
-        'prada': 2500,
-        'gucci': 2000,
-        'chanel': 3000,
-        'louis': 2800,  # Louis Vuitton
-        'hermes': 8000,
-        'dior': 2200,
-        'versace': 1800,
-        'rolex': 12000,
-        'omega': 4000
-    }
-    
-    for brand, price in luxury_brands.items():
-        if brand in filename_lower:
-            logger.info(f"🎯 BRAND DETECTED FROM FILENAME: {brand} → ${price}")
-            return brand, price
-    
-    return None, None
-
-def detect_item_type(filename):
-    """Detect item type from filename"""
-    filename_lower = filename.lower()
-    
-    if any(word in filename_lower for word in ['bag', 'handbag', 'purse', 'clutch', 'tote']):
-        return 'handbag', 'fashion_beauty'
-    elif any(word in filename_lower for word in ['watch', 'rolex', 'omega']):
-        return 'watch', 'fashion_beauty'
-    elif any(word in filename_lower for word in ['phone', 'iphone', 'samsung']):
-        return 'smartphone', 'electronics'
-    elif any(word in filename_lower for word in ['laptop', 'macbook', 'computer']):
-        return 'laptop', 'electronics'
-    else:
-        return 'item', 'electronics'
-
-# Ultimate pricing engine with manual brand detection
-class UltimatePricingEngine:
+# BULLETPROOF PRICING ENGINE
+class BulletproofPricingEngine:
     def __init__(self):
-        self.luxury_brands = {
-            'prada': {'handbag': 2500, 'wallet': 800, 'shoes': 1200},
-            'gucci': {'handbag': 2000, 'wallet': 600, 'shoes': 1000},
-            'chanel': {'handbag': 3000, 'wallet': 1200, 'shoes': 1500},
-            'louis vuitton': {'handbag': 2800, 'wallet': 900, 'shoes': 1300},
-            'hermes': {'handbag': 8000, 'wallet': 2000, 'shoes': 3000},
-            'dior': {'handbag': 2200, 'wallet': 700, 'shoes': 1100},
-            'versace': {'handbag': 1800, 'wallet': 600, 'shoes': 900},
-            'rolex': {'watch': 12000},
-            'omega': {'watch': 4000}
+        self.brand_database = {
+            # LUXURY TIER - $2000-8000
+            'prada': {'handbag': 2500, 'wallet': 800, 'shoes': 1200, 'default': 2000},
+            'gucci': {'handbag': 2200, 'wallet': 700, 'shoes': 1100, 'default': 1800},
+            'chanel': {'handbag': 3200, 'wallet': 1200, 'shoes': 1600, 'default': 2500},
+            'louis vuitton': {'handbag': 2800, 'wallet': 900, 'shoes': 1400, 'default': 2200},
+            'hermes': {'handbag': 8000, 'wallet': 2000, 'shoes': 3000, 'default': 5000},
+            'dior': {'handbag': 2400, 'wallet': 800, 'shoes': 1300, 'default': 2000},
+            'versace': {'handbag': 1800, 'wallet': 600, 'shoes': 1000, 'default': 1500},
+            'armani': {'handbag': 1600, 'wallet': 500, 'shoes': 900, 'default': 1200},
+            'rolex': {'watch': 15000, 'default': 12000},
+            'omega': {'watch': 5000, 'default': 4000},
+            'cartier': {'watch': 8000, 'jewelry': 3000, 'default': 5000},
+            
+            # PREMIUM TIER - $500-2000
+            'apple': {'phone': 1200, 'laptop': 2200, 'tablet': 800, 'watch': 500, 'default': 1000},
+            'samsung': {'phone': 900, 'laptop': 1400, 'tablet': 600, 'tv': 1200, 'default': 800},
+            'sony': {'camera': 1800, 'headphones': 400, 'tv': 1400, 'console': 700, 'default': 600},
+            'canon': {'camera': 1600, 'lens': 800, 'default': 1200},
+            'nikon': {'camera': 1500, 'lens': 700, 'default': 1100},
+            'bose': {'headphones': 400, 'speaker': 300, 'default': 350},
+            'beats': {'headphones': 300, 'speaker': 250, 'default': 275},
+            'nike': {'shoes': 200, 'clothing': 100, 'default': 150},
+            'adidas': {'shoes': 180, 'clothing': 90, 'default': 130},
+            'coach': {'handbag': 800, 'wallet': 300, 'default': 600},
+            'michael kors': {'handbag': 400, 'wallet': 150, 'default': 300},
+            
+            # STANDARD TIER - $100-500
+            'zara': {'clothing': 80, 'shoes': 100, 'default': 90},
+            'h&m': {'clothing': 50, 'shoes': 60, 'default': 55},
+            'uniqlo': {'clothing': 60, 'shoes': 70, 'default': 65},
+            'ikea': {'furniture': 200, 'decor': 50, 'default': 125},
+            'target': {'clothing': 40, 'home': 60, 'default': 50}
         }
         
-        self.premium_brands = {
-            'apple': {'phone': 1200, 'laptop': 2000, 'tablet': 800},
-            'samsung': {'phone': 900, 'laptop': 1200, 'tablet': 600},
-            'sony': {'camera': 1500, 'headphones': 300, 'tv': 1200},
-            'nike': {'shoes': 180, 'clothing': 80},
-            'adidas': {'shoes': 160, 'clothing': 70}
+        self.item_patterns = {
+            'handbag': ['handbag', 'bag', 'purse', 'clutch', 'tote', 'shoulder bag', 'crossbody'],
+            'wallet': ['wallet', 'purse', 'cardholder', 'billfold'],
+            'shoes': ['shoes', 'sneakers', 'boots', 'sandals', 'heels', 'flats'],
+            'watch': ['watch', 'timepiece', 'smartwatch'],
+            'phone': ['phone', 'smartphone', 'iphone', 'mobile'],
+            'laptop': ['laptop', 'notebook', 'macbook', 'computer'],
+            'tablet': ['tablet', 'ipad'],
+            'camera': ['camera', 'dslr', 'mirrorless'],
+            'headphones': ['headphones', 'earbuds', 'airpods'],
+            'clothing': ['dress', 'shirt', 'jacket', 'pants', 'jeans', 'sweater'],
+            'jewelry': ['necklace', 'bracelet', 'ring', 'earrings']
         }
         
-        self.category_bases = {
+        self.category_defaults = {
+            'fashion_beauty': 120,
             'electronics': 200,
-            'fashion_beauty': 150,
             'vehicles': 25000,
-            'home_garden': 180,
+            'home_garden': 150,
             'baby_kids': 80
         }
     
-    def analyze_comprehensive_pricing(self, item_info, filename=None):
-        brand = item_info.get('brand', 'unknown').lower()
-        category = item_info.get('category', 'electronics')
-        condition = item_info.get('condition', 'good')
-        description = item_info.get('description', 'item').lower()
+    def detect_brand(self, text):
+        """Detect brand from text"""
+        text_lower = text.lower()
         
-        # Manual brand detection from filename
-        if filename:
-            detected_brand, detected_price = detect_brand_from_filename(filename)
-            if detected_brand:
-                brand = detected_brand
-                item_info['brand'] = detected_brand
+        for brand in self.brand_database.keys():
+            if brand in text_lower:
+                return brand
+        return None
+    
+    def detect_item_type(self, text):
+        """Detect item type from text"""
+        text_lower = text.lower()
         
-        # Determine item type
-        item_type = 'item'
-        if 'handbag' in description or 'bag' in description:
-            item_type = 'handbag'
-        elif 'watch' in description:
-            item_type = 'watch'
-        elif 'phone' in description:
-            item_type = 'phone'
-        elif 'laptop' in description:
-            item_type = 'laptop'
-        elif 'shoes' in description:
-            item_type = 'shoes'
-        
-        # Check luxury brands first
-        if brand in self.luxury_brands:
-            brand_data = self.luxury_brands[brand]
-            base_price = brand_data.get(item_type, brand_data.get('handbag', 2000))
-            logger.info(f"💎 LUXURY BRAND: {brand} {item_type} → ${base_price}")
-        elif brand in self.premium_brands:
-            brand_data = self.premium_brands[brand]
-            base_price = brand_data.get(item_type, brand_data.get('phone', 500))
-            logger.info(f"⭐ PREMIUM BRAND: {brand} {item_type} → ${base_price}")
-        else:
-            base_price = self.category_bases.get(category, 150)
-            logger.info(f"📊 CATEGORY BASE: {category} → ${base_price}")
-        
-        # Condition adjustments
+        for item_type, patterns in self.item_patterns.items():
+            if any(pattern in text_lower for pattern in patterns):
+                return item_type
+        return 'item'
+    
+    def get_pricing(self, brand, item_type, category, condition):
+        """Get pricing for brand + item combination"""
         condition_multipliers = {
             'excellent': 1.2,
             'very_good': 1.0,
@@ -171,10 +121,20 @@ class UltimatePricingEngine:
             'poor': 0.45
         }
         
+        # Get base price
+        if brand and brand in self.brand_database:
+            brand_data = self.brand_database[brand]
+            base_price = brand_data.get(item_type, brand_data.get('default', 500))
+            logger.info(f"💎 BRAND PRICING: {brand} {item_type} → ${base_price}")
+        else:
+            base_price = self.category_defaults.get(category, 150)
+            logger.info(f"📊 CATEGORY PRICING: {category} → ${base_price}")
+        
+        # Apply condition
         multiplier = condition_multipliers.get(condition, 0.85)
         final_price = base_price * multiplier
         
-        logger.info(f"💰 FINAL PRICING: ${base_price} × {multiplier} = ${final_price}")
+        logger.info(f"💰 FINAL: ${base_price} × {multiplier} = ${final_price}")
         
         return {
             'pricing_analysis': {
@@ -185,12 +145,12 @@ class UltimatePricingEngine:
                 'range_max': round(final_price * 1.15, 0),
                 'average': round(final_price, 0),
                 'confidence': 'high',
-                'pricing_source': 'ultimate_engine'
+                'pricing_source': 'bulletproof_engine'
             },
-            'sources': [{'source': 'Ultimate Pricing Engine', 'confidence': 'high'}]
+            'sources': [{'source': 'Bulletproof Engine', 'confidence': 'high'}]
         }
 
-pricing_engine = UltimatePricingEngine()
+pricing_engine = BulletproofPricingEngine()
 
 MARKETPLACE_CATEGORIES = {
     "electronics": {
@@ -245,152 +205,127 @@ def analyze_item_photo(image_file):
         image_hash = hashlib.sha256(image_content + session_id.encode()).hexdigest()[:12]
         image_file.seek(0)
         
-        logger.info(f"=== NEW ANALYSIS SESSION {session_id} ===")
-        logger.info(f"📁 Filename: {filename}")
+        logger.info(f"=== ANALYSIS SESSION {session_id} ===")
+        logger.info(f"📁 File: {filename}")
         
-        # Detect brand and item type from filename
-        detected_brand, detected_price = detect_brand_from_filename(filename)
-        item_type, category = detect_item_type(filename)
-        
+        # Prepare image
         image = Image.open(image_file)
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
         
-        client = get_openai_client()
-        
         # Try OpenAI analysis
+        client = get_openai_client()
+        brand = None
+        item_type = None
+        category = 'electronics'
+        condition = 'good'
+        analysis_text = 'Analysis unavailable'
+        
         if client:
             try:
-                # Handle both old and new OpenAI versions
-                if hasattr(client, 'chat'):
-                    # New version
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[
-                            {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "text": f"Analyze this image. What brand and item is this? Return JSON: {{\"brand\": \"brand name\", \"item\": \"item type\", \"category\": \"fashion_beauty/electronics/vehicles/home_garden/baby_kids\", \"condition\": \"excellent/very_good/good/fair/poor\", \"estimated_value\": \"XXX AUD\"}}"
-                                    },
-                                    {
-                                        "type": "image_url", 
-                                        "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                                    }
-                                ]
-                            }
-                        ],
-                        max_tokens=300,
-                        temperature=0.1
-                    )
-                    
-                    analysis_text = response.choices[0].message.content
-                    
-                else:
-                    # Old version
-                    response = client.ChatCompletion.create(
-                        model="gpt-4-vision-preview",
-                        messages=[
-                            {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "text": f"Analyze this image. What brand and item is this? Return JSON: {{\"brand\": \"brand name\", \"item\": \"item type\", \"category\": \"fashion_beauty/electronics/vehicles/home_garden/baby_kids\", \"condition\": \"excellent/very_good/good/fair/poor\", \"estimated_value\": \"XXX AUD\"}}"
-                                    },
-                                    {
-                                        "type": "image_url", 
-                                        "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
-                                    }
-                                ]
-                            }
-                        ],
-                        max_tokens=300,
-                        temperature=0.1
-                    )
-                    
-                    analysis_text = response.choices[0].message.content
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "Analyze this image and identify: 1) The exact brand name, 2) The type of item, 3) The condition. Return JSON: {\"brand\": \"brand_name\", \"item_type\": \"item_type\", \"category\": \"fashion_beauty/electronics/vehicles/home_garden/baby_kids\", \"condition\": \"excellent/very_good/good/fair/poor\", \"description\": \"detailed description\"}"
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+                                }
+                            ]
+                        }
+                    ],
+                    max_tokens=500,
+                    temperature=0.1
+                )
                 
-                # Parse AI response
+                analysis_text = response.choices[0].message.content
+                logger.info(f"🤖 OpenAI Response: {analysis_text}")
+                
+                # Parse response
                 try:
-                    analysis_json = json.loads(analysis_text)
-                    brand = analysis_json.get('brand', detected_brand or 'unknown')
-                    specific_item = analysis_json.get('item', item_type)
-                    ai_category = analysis_json.get('category', category)
-                    condition = analysis_json.get('condition', 'good')
-                    ai_estimated_value = analysis_json.get('estimated_value', 'unknown')
+                    # Clean JSON
+                    clean_text = re.sub(r'```json\s*', '', analysis_text)
+                    clean_text = re.sub(r'```\s*', '', clean_text)
                     
-                    logger.info(f"🎯 AI SUCCESS: {brand} {specific_item} → {ai_estimated_value}")
+                    data = json.loads(clean_text)
+                    brand = data.get('brand', '').lower().strip()
+                    item_type = data.get('item_type', '').lower().strip()
+                    category = data.get('category', 'electronics')
+                    condition = data.get('condition', 'good')
+                    
+                    logger.info(f"✅ PARSED: Brand={brand}, Item={item_type}, Category={category}")
                     
                 except Exception as e:
-                    logger.error(f"AI parsing error: {e}")
-                    brand = detected_brand or 'unknown'
-                    specific_item = item_type
-                    ai_category = category
-                    condition = 'good'
-                    ai_estimated_value = 'unknown'
-                    analysis_text = f"AI analysis failed: {e}"
+                    logger.error(f"JSON parsing failed: {e}")
+                    # Extract info manually
+                    text_lower = analysis_text.lower()
+                    
+                    # Brand detection
+                    for brand_name in pricing_engine.brand_database.keys():
+                        if brand_name in text_lower:
+                            brand = brand_name
+                            break
+                    
+                    # Item detection
+                    item_type = pricing_engine.detect_item_type(analysis_text)
+                    
+                    logger.info(f"🔧 MANUAL EXTRACTION: Brand={brand}, Item={item_type}")
                 
             except Exception as e:
-                logger.error(f"❌ OpenAI API call failed: {e}")
-                client = None
+                logger.error(f"OpenAI call failed: {e}")
         
-        # Fallback to manual detection
-        if not client:
-            logger.info("🔧 Using manual detection")
-            brand = detected_brand or 'unknown'
-            specific_item = item_type
-            ai_category = category
-            condition = 'good'
-            ai_estimated_value = 'unknown'
-            analysis_text = f"Manual detection: {brand} {specific_item}"
+        # Fallback detection
+        if not brand:
+            brand = pricing_engine.detect_brand(filename + ' ' + analysis_text)
         
-        # Create item info
+        if not item_type:
+            item_type = pricing_engine.detect_item_type(filename + ' ' + analysis_text)
+        
+        # Ensure we have something
+        brand = brand or 'unknown'
+        item_type = item_type or 'item'
+        
+        logger.info(f"🎯 FINAL DETECTION: Brand={brand}, Item={item_type}")
+        
+        # Get pricing
+        pricing_data = pricing_engine.get_pricing(brand, item_type, category, condition)
+        
+        # Build item info
         item_info = {
             'brand': brand,
             'model': 'unknown',
-            'category': ai_category,
-            'description': specific_item,
+            'category': category,
+            'description': item_type,
             'condition': condition,
             'session_id': session_id,
             'image_hash': image_hash
         }
         
-        # Get pricing
-        pricing_data = pricing_engine.analyze_comprehensive_pricing(item_info, filename)
-        
-        # Check if AI gave us a price
-        if ai_estimated_value and ai_estimated_value != 'unknown':
-            try:
-                ai_price = float(re.findall(r'(\d+)', ai_estimated_value)[0])
-                if ai_price > 0:
-                    pricing_data['pricing_analysis']['market_value'] = ai_price
-                    pricing_data['pricing_analysis']['quick_sale'] = round(ai_price * 0.85, 0)
-                    pricing_data['pricing_analysis']['premium_price'] = round(ai_price * 1.15, 0)
-                    logger.info(f"🎯 USING AI PRICE: ${ai_price}")
-            except:
-                pass
-        
-        category_info = MARKETPLACE_CATEGORIES.get(ai_category, MARKETPLACE_CATEGORIES['electronics'])
+        category_info = MARKETPLACE_CATEGORIES.get(category, MARKETPLACE_CATEGORIES['electronics'])
         
         return {
-            'category': ai_category,
+            'category': category,
             'category_info': category_info,
             'analysis': analysis_text,
             'analysis_json': item_info,
             'pricing_data': pricing_data,
             'image_hash': image_hash,
             'session_id': session_id,
-            'specific_item': specific_item,
-            'ai_suggested_category': ai_category,
-            'corrected_category': ai_category,
-            'ai_estimated_value': ai_estimated_value
+            'specific_item': item_type,
+            'ai_suggested_category': category,
+            'corrected_category': category,
+            'ai_estimated_value': f"${pricing_data['pricing_analysis']['market_value']}"
         }
         
     except Exception as e:
-        logger.error(f"Error analyzing photo: {e}")
+        logger.error(f"Analysis failed: {e}")
         return None
 
 def generate_category_listing(analysis_data):
@@ -403,7 +338,7 @@ def generate_category_listing(analysis_data):
     condition = analysis_json.get('condition', 'good')
     market_value = pricing_analysis.get('market_value', 100)
     
-    logger.info(f"📝 GENERATING LISTING FOR: {brand} {model} {specific_item} - ${market_value}")
+    logger.info(f"📝 LISTING: {brand} {model} {specific_item} - ${market_value}")
     
     return f"I'm selling my {brand} {model} {specific_item} in {condition} condition for ${market_value}. This item has been well-maintained and is ready for a new owner. It's a great opportunity to get a quality {specific_item} at a fair price. Please feel free to contact me if you have any questions or would like to arrange a viewing. Serious buyers only, please. Located in Australia with flexible pickup arrangements available."
 
@@ -432,7 +367,7 @@ def analyze():
         return render_template('results.html', analysis_data=analysis_data, listing=listing)
         
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Route error: {e}")
         flash('Error processing request')
         return redirect(url_for('index'))
 
@@ -471,12 +406,12 @@ def refine_analysis():
         session['current_analysis'] = updated_analysis
         updated_listing = generate_category_listing(updated_analysis)
         
-        logger.info(f"💰 PRICE ADJUSTED: ${original_price} → ${new_market_value}")
+        logger.info(f"💰 ADJUSTED: ${original_price} → ${new_market_value}")
         
         return render_template('results.html', analysis_data=updated_analysis, listing=updated_listing, updated=True)
         
     except Exception as e:
-        logger.error(f"Error in refine-analysis: {e}")
+        logger.error(f"Refine error: {e}")
         return redirect(url_for('index'))
 
 @app.route('/categories')
