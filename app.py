@@ -44,14 +44,18 @@ Analyze this image thoroughly and provide:
 2. Specific item type and model/year
 3. Condition assessment (excellent/very_good/good/fair/poor)
 4. Market category (fashion_beauty/electronics/vehicles/home_garden/baby_kids)
-5. REALISTIC Australian market value estimate in AUD based on current market conditions
+5. REALISTIC Australian second-hand market value estimate in AUD
+   - Be CONSERVATIVE with pricing - what would this ACTUALLY sell for on Gumtree/Facebook Marketplace/eBay
+   - Consider substantial depreciation from retail prices
+   - NOT collector value but realistic everyday second-hand value
 6. Key factors affecting price (age, condition, rarity, demand)
 
-Be very accurate with pricing - consider actual depreciation, current market demand, and realistic second-hand values.
+Be very accurate and CONSERVATIVE with pricing - most items sell for far less second-hand than people expect.
 
-For vehicles: Consider age, mileage, condition, and actual Australian used car market prices.
-For luxury items: Consider authenticity, condition, and current resale market.
-For electronics: Consider age, condition, and rapid depreciation.
+For vehicles: Consider age, mileage, condition using actual second-hand dealer prices.
+For luxury items: Consider authenticity, condition, and ACTUAL resale market (not retail).
+For electronics: Consider rapid depreciation (usually 50-70% in first year).
+For collectibles: Be extremely conservative unless provably rare.
 
 Return JSON: {
     "brand": "exact brand name or unknown",
@@ -59,10 +63,10 @@ Return JSON: {
     "item_type": "specific item description",
     "category": "market category",
     "condition": "condition assessment",
-    "estimated_value_aud": "realistic price in AUD",
+    "estimated_value_aud": "realistic second-hand price in AUD",
     "confidence_level": "high/medium/low",
     "price_factors": ["factor1", "factor2", "factor3"],
-    "market_notes": "brief analysis of why this price is realistic"
+    "market_notes": "brief analysis of why this price is realistic for Australian second-hand market"
 }""",
             
             "pricing": """You are a pricing expert for Australian second-hand markets. 
@@ -194,6 +198,169 @@ class PureAIDynamicPricingEngine:
             'baby_kids': 80
         }
     
+    def validate_ai_price(self, ai_price, analysis_data):
+        """Validate AI-generated prices for realistic Australian second-hand marketplace values"""
+        try:
+            item_type = analysis_data.get('item_type', '').lower()
+            category = analysis_data.get('category', 'electronics')
+            brand = analysis_data.get('brand', '').lower()
+            condition = analysis_data.get('condition', 'good')
+            
+            logger.info(f"🔍 Validating AI price: ${ai_price} for {brand} {item_type}")
+            
+            # Australian second-hand market caps
+            aus_secondhand_caps = {
+                'home_garden': {
+                    'default': 900,
+                    'music box': 250,
+                    'white noise': 120,     # Specifically for white noise machines/music boxes
+                    'collectible': 300,
+                    'decoration': 200,
+                    'kitchenware': 250,
+                    'small_appliance': 150,
+                    'furniture': 1200,
+                    'tools': 400,
+                    'garden': 300
+                },
+                'electronics': {
+                    'default': 900,
+                    'smartphone': 700,
+                    'iphone': 850,
+                    'laptop': 1000,
+                    'macbook': 1500,
+                    'tablet': 450,
+                    'ipad': 650,
+                    'camera': 600,
+                    'headphones': 180,
+                    'gaming_console': 400,
+                    'tv': 700
+                },
+                'fashion_beauty': {
+                    'default': 350,
+                    'handbag': 450,
+                    'watch': 600,
+                    'jewelry': 700,
+                    'shoes': 180,
+                    'clothing': 120
+                },
+                'baby_kids': {
+                    'default': 180,
+                    'stroller': 350,
+                    'car_seat': 250,
+                    'toys': 60,
+                    'clothing': 40
+                },
+                'vehicles': {
+                    'default': 15000,
+                    'bicycle': 500,
+                    'scooter': 700,
+                    'motorcycle': 6000
+                }
+            }
+            
+            # Australian luxury brand exceptions
+            aus_luxury_brands = ['louis vuitton', 'gucci', 'prada', 'chanel', 'hermes', 'rolex', 'cartier', 
+                             'tiffany', 'versace', 'dior', 'omega', 'bulgari', 'fendi', 'burberry', 
+                             'balenciaga', 'bottega veneta', 'ysl', 'yves saint laurent', 'zimmermann',
+                             'oroton', 'r.m. williams', 'r.m williams', 'rm williams', 'akubra']
+            
+            is_luxury = any(luxury in brand for luxury in aus_luxury_brands)
+            
+            # Apply Australian luxury second-hand caps
+            if is_luxury:
+                # Australian luxury second-hand caps
+                aus_luxury_caps = {
+                    'handbag': 6000,
+                    'watch': 10000,
+                    'jewelry': 7000,
+                    'shoes': 1000,
+                    'clothing': 1200,
+                    'accessory': 2500
+                }
+                
+                for item_keyword, cap in aus_luxury_caps.items():
+                    if item_keyword in item_type and ai_price > cap:
+                        logger.warning(f"⚠️ AUS Luxury second-hand cap: ${ai_price} → ${cap}")
+                        return cap
+                        
+                # Default Australian luxury cap if no specific match
+                if ai_price > 12000:
+                    logger.warning(f"⚠️ General AUS luxury second-hand cap: ${ai_price} → $6000")
+                    return 6000
+                    
+                # Luxury items still get a moderate sanity check
+                if ai_price > 20000:
+                    logger.warning(f"⚠️ Extreme luxury price cap: ${ai_price} → $15000")
+                    return 15000
+                    
+                return ai_price  # Return the price for luxury items that aren't above caps
+            
+            # Special handling for commonly overvalued items in Australian market
+            common_aus_overvalued = {
+                'music box': 250,
+                'white noise music box': 120,  # Very specific for your case
+                'figurine': 200,
+                'vinyl record': 50,
+                'book': 30,
+                'souvenir': 100,
+                'ornament': 120,
+                'wall art': 300,
+                'costume jewelry': 150,
+                'antique': 800
+            }
+            
+            # Check for specific overvalued items
+            for item_keyword, cap in common_aus_overvalued.items():
+                if item_keyword in item_type and ai_price > cap:
+                    logger.warning(f"⚠️ AUS overvaluation correction: ${ai_price} → ${cap} for {item_keyword}")
+                    return cap
+            
+            # Apply Australian second-hand market caps for non-luxury items
+            if category in aus_secondhand_caps:
+                # First check for specific branded items with higher resale value
+                high_resale_brands = {
+                    'apple': 1.2,
+                    'dyson': 1.2,
+                    'vitamix': 1.1,
+                    'sony': 1.1,
+                    'samsung': 1.05,
+                    'nintendo': 1.2,
+                    'lego': 1.2
+                }
+                
+                brand_factor = 1.0
+                for resale_brand, factor in high_resale_brands.items():
+                    if resale_brand in brand:
+                        brand_factor = factor
+                        break
+                        
+                # Check for specific item types first, apply brand factor
+                for item_keyword, cap in aus_secondhand_caps[category].items():
+                    if item_keyword != 'default' and item_keyword in item_type:
+                        adjusted_cap = round(cap * brand_factor)
+                        if ai_price > adjusted_cap:
+                            logger.warning(f"⚠️ AUS second-hand cap: ${ai_price} → ${adjusted_cap} for {brand} {item_keyword}")
+                            return adjusted_cap
+                
+                # Apply default category cap if no specific item match
+                default_cap = round(aus_secondhand_caps[category]['default'] * brand_factor)
+                if ai_price > default_cap:
+                    logger.warning(f"⚠️ Default AUS second-hand cap: ${ai_price} → ${default_cap}")
+                    return default_cap
+            
+            # Special case for white noise music boxes (your specific issue)
+            if ('white noise' in item_type or 'white noise' in brand) and ('music box' in item_type or 'musical box' in item_type):
+                if ai_price > 120:
+                    logger.warning(f"⚠️ White noise music box correction: ${ai_price} → $80-120 range")
+                    return random.uniform(80, 120)
+            
+            # If we reach here, the price seems reasonable
+            return ai_price
+            
+        except Exception as e:
+            logger.error(f"Price validation error: {e}")
+            return ai_price
+    
     def generate_ai_dynamic_pricing(self, analysis_data, img_base64):
         """Generate purely AI-driven dynamic pricing"""
         try:
@@ -203,14 +370,18 @@ class PureAIDynamicPricingEngine:
             if ai_price and ai_price > 0:
                 logger.info(f"🎯 AI PROVIDED PRICE: ${ai_price}")
                 
-                # Apply condition adjustment to AI price
+                # Validate AI price using Australian second-hand market values
+                validated_price = self.validate_ai_price(ai_price, analysis_data)
+                
+                # Apply condition adjustment to validated price
                 condition = analysis_data.get('condition', 'good')
                 condition_multiplier = self.condition_multipliers.get(condition, 0.75)
                 
-                adjusted_price = ai_price * condition_multiplier
+                adjusted_price = validated_price * condition_multiplier
                 
                 logger.info(f"💰 AI DYNAMIC PRICING:")
                 logger.info(f"   AI Estimate: ${ai_price}")
+                logger.info(f"   Validated: ${validated_price}")
                 logger.info(f"   Condition: {condition} (×{condition_multiplier})")
                 logger.info(f"   Final: ${adjusted_price}")
                 
@@ -230,7 +401,12 @@ class PureAIDynamicPricingEngine:
                     
                     if market_value and market_value > 0:
                         logger.info(f"🎯 SECONDARY AI PRICING: ${market_value}")
-                        return self._create_pricing_structure(market_value, 'medium', 'ai_secondary_analysis')
+                        
+                        # Validate secondary price as well
+                        validated_price = self.validate_ai_price(market_value, analysis_data)
+                        logger.info(f"   Validated Secondary: ${validated_price}")
+                        
+                        return self._create_pricing_structure(validated_price, 'medium', 'ai_secondary_analysis')
                     
                 except Exception as e:
                     logger.error(f"Secondary pricing parsing failed: {e}")
