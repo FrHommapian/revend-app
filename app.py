@@ -146,13 +146,35 @@ Return JSON: {
         return None
 
 def extract_price_from_ai_estimate(estimated_value):
-    """Extract numerical price from AI estimate"""
+    """Extract numerical price from AI estimate with improved range handling"""
     try:
         if not estimated_value:
             return None
         
+        # Convert to string to ensure we can process it
+        value_str = str(estimated_value).lower()
+        
+        # Check for range format (e.g., "20-30", "$20-$30", "20 to 30")
+        range_patterns = [
+            r'(\d+)[\s-]*to[\s-]*(\d+)',  # "20 to 30"
+            r'(\d+)[\s-]*-[\s-]*(\d+)',   # "20-30"
+            r'\$(\d+)[\s-]*-[\s-]*\$?(\d+)',  # "$20-$30" or "$20-30"
+            r'between\s+\$?(\d+)\s+and\s+\$?(\d+)'  # "between $20 and $30"
+        ]
+        
+        for pattern in range_patterns:
+            range_match = re.search(pattern, value_str)
+            if range_match:
+                # Get the average of the range
+                low = float(range_match.group(1))
+                high = float(range_match.group(2))
+                average = (low + high) / 2
+                logger.info(f"📊 Parsed price range {low}-{high}, using average: ${average}")
+                return average
+        
+        # If not a range, extract a single number
         # Remove currency symbols and common words
-        clean_value = re.sub(r'[^\d,.]', '', str(estimated_value))
+        clean_value = re.sub(r'[^\d,.]', '', value_str)
         
         # Extract number
         numbers = re.findall(r'(\d+(?:,\d{3})*(?:\.\d{2})?)', clean_value)
@@ -163,8 +185,16 @@ def extract_price_from_ai_estimate(estimated_value):
             if 10 <= price <= 1000000:
                 return price
         
+        # For very small values like "20" that might get missed
+        if re.search(r'\b\d+\b', value_str):
+            simple_number = re.search(r'\b(\d+)\b', value_str).group(1)
+            simple_price = float(simple_number)
+            if 5 <= simple_price <= 1000000:
+                return simple_price
+        
         return None
-    except:
+    except Exception as e:
+        logger.error(f"Price extraction error: {e}")
         return None
 
 def format_condition_display(condition):
@@ -207,6 +237,24 @@ class PureAIDynamicPricingEngine:
             condition = analysis_data.get('condition', 'good')
             
             logger.info(f"🔍 Validating AI price: ${ai_price} for {brand} {item_type}")
+            
+            # Extremely specific item types that often get overvalued
+            specific_item_caps = {
+                'remote control': 30,      # Remote controls should be very cheap
+                'tv remote': 30,           # TV remotes specifically
+                'remote': 35,              # Generic remotes
+                'cable': 20,               # Cables are typically inexpensive
+                'charger': 25,             # Chargers as well
+                'adapter': 30,             # Power adapters
+                'case': 50,                # Phone/device cases
+                'cover': 40                # Covers for devices
+            }
+            
+            # Check for specific common items first
+            for specific_item, cap in specific_item_caps.items():
+                if specific_item in item_type and ai_price > cap:
+                    logger.warning(f"⚠️ Common item correction: ${ai_price} → ${cap} for {specific_item}")
+                    return cap
             
             # Australian second-hand market caps
             aus_secondhand_caps = {
